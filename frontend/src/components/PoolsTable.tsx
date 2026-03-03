@@ -56,7 +56,7 @@ const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loa
               const tvl = parseFloat(pool.reserve0 || "0") * shmPrice +
                           parseFloat(pool.reserve1 || "0") * tokenPriceToUSD(pool.token1Price || "0", shmPrice);
               return (
-                <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)}>
+                <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id.toLowerCase())}>
                   <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                   <td>
                     <div className="token-pair">

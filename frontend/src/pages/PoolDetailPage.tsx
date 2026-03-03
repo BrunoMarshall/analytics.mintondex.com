@@ -9,7 +9,7 @@ import { tokenPriceToUSD } from "../utils/coingecko";
 import TokenIcon from "../components/TokenIcon";
 
 const PoolDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>(); const id = rawId?.toLowerCase();
   const navigate = useNavigate();
   const { shmPrice } = useSHMPrice();
   const [activeTab, setActiveTab] = useState<"overview" | "swaps" | "positions">("overview");
