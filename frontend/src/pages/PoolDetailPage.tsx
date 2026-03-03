@@ -14,7 +14,7 @@ const PoolDetailPage: React.FC = () => {
   const { shmPrice } = useSHMPrice();
   const [activeTab, setActiveTab] = useState<"overview" | "swaps" | "positions">("overview");
 
-  const { data, loading } = useQuery(POOL_DETAIL_QUERY, { variables: { id } });
+  const { data, loading, error } = useQuery(POOL_DETAIL_QUERY, { variables: { id }, fetchPolicy: "network-only" });
   const { data: dayData } = useQuery(POOL_DAY_DATA_QUERY, { variables: { poolId: id, startTime: daysAgo(90) } });
   const { data: swapsData } = useQuery(RECENT_SWAPS_QUERY, { variables: { poolId: id, first: 25 } });
   const { data: posData } = useQuery(LP_POSITIONS_QUERY, { variables: { poolId: id } });
@@ -29,7 +29,8 @@ const PoolDetailPage: React.FC = () => {
     : 0;
 
   if (loading) return <div className="loading-state"><div className="spinner" /></div>;
-  if (!pool) return <div className="error-state">Pair not found</div>;
+  if (error) return <div className="error-state">Query error: {error.message}</div>;
+  if (!pool) return <div className="error-state">Pair not found — id: {id}</div>;
 
   return (
     <div>
