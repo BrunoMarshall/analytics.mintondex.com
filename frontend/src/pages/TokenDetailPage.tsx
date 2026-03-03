@@ -15,7 +15,7 @@ const TokenDetailPage: React.FC = () => {
   const id = (rawId ?? "").toLowerCase();
   const navigate = useNavigate();
   const { shmPrice } = useSHMPrice();
-  const { data: shmHistory } = useSHMHistory();
+  const { data: shmHistory, loading: shmLoading } = useSHMHistory();
 
   const { data, loading, error } = useQuery(TOKEN_DETAIL_QUERY, { variables: { id }, skip: !id, fetchPolicy: "network-only" });
   const { data: dayData } = useQuery(TOKEN_DAY_DATA_QUERY, { variables: { tokenId: id, startTime: daysAgo(90) }, skip: !id });
@@ -69,7 +69,7 @@ const TokenDetailPage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <PriceTokenChart data={priceChartData} symbol={token.symbol} loading={false} />
+        <PriceTokenChart data={priceChartData} symbol={token.symbol} loading={isWshm ? shmLoading : false} />
         <VolumeChart data={volumeChartData} loading={false} />
       </div>
 
