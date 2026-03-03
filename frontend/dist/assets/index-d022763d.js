@@ -187,12 +187,14 @@ this in the docs: http://dev.apollodata.com/core/fragments.html#unique-names`):o
     }
   }
 `,KL=Ut`
+  query GetTokenDayData($tokenId: String!, $startTime: Int!) {
     tokenDayDatas(first: 90, orderBy: date, orderDirection: asc,
       where: { token: $tokenId, date_gt: $startTime }) {
       date priceUSD volumeUSD txCount
     }
   }
 `,YL=Ut`
+  query GetToken($id: ID!) {
     token(id: $id) {
       id symbol name decimals priceUSD tradeVolume txCount poolCount
       pairsBase(first: 5, orderBy: volumeUSD, orderDirection: desc) {
