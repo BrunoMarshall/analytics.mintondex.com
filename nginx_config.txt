@@ -1,0 +1,33 @@
+# Save as: /etc/nginx/sites-available/analytics.mintondex.com
+# Then: ln -s /etc/nginx/sites-available/analytics.mintondex.com /etc/nginx/sites-enabled/
+# Then: nginx -t && systemctl reload nginx
+# Then: certbot --nginx -d analytics.mintondex.com
+
+server {
+    listen 80;
+    server_name analytics.mintondex.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name analytics.mintondex.com;
+
+    root /var/www/analytics.mintondex.com;
+    index index.html;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json;
+
+    location ~* \.(js|css|png|jpg|ico|svg|woff2)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+}

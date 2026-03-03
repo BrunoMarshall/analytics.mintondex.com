@@ -1,0 +1,149 @@
+type Token @entity(immutable: false) {
+  id: ID!
+  symbol: String!
+  name: String!
+  decimals: BigInt!
+  totalSupply: BigDecimal!
+  priceUSD: BigDecimal!
+  volume: BigDecimal!
+  txCount: BigInt!
+  poolCount: BigInt!
+  tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
+}
+
+type Pool @entity(immutable: false) {
+  id: ID!
+  token0: Token!
+  token1: Token!
+  feeTier: BigInt!
+  liquidity: BigDecimal!
+  sqrtPrice: BigInt!
+  tick: BigInt
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
+  totalValueLockedUSD: BigDecimal!
+  totalValueLockedToken0: BigDecimal!
+  totalValueLockedToken1: BigDecimal!
+  createdAtTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+  swaps: [Swap!]! @derivedFrom(field: "pool")
+  mints: [Mint!]! @derivedFrom(field: "pool")
+  burns: [Burn!]! @derivedFrom(field: "pool")
+  poolDayData: [PoolDayData!]! @derivedFrom(field: "pool")
+  poolHourData: [PoolHourData!]! @derivedFrom(field: "pool")
+}
+
+type Swap @entity(immutable: true) {
+  id: ID!
+  pool: Pool!
+  timestamp: BigInt!
+  sender: Bytes!
+  recipient: Bytes!
+  amount0: BigDecimal!
+  amount1: BigDecimal!
+  amountUSD: BigDecimal!
+  sqrtPriceX96: BigInt!
+  tick: BigInt!
+  logIndex: BigInt
+}
+
+type Mint @entity(immutable: true) {
+  id: ID!
+  pool: Pool!
+  timestamp: BigInt!
+  owner: Bytes!
+  sender: Bytes
+  origin: Bytes!
+  amount: BigDecimal!
+  amount0: BigDecimal!
+  amount1: BigDecimal!
+  amountUSD: BigDecimal!
+  tickLower: BigInt!
+  tickUpper: BigInt!
+  logIndex: BigInt
+}
+
+type Burn @entity(immutable: true) {
+  id: ID!
+  pool: Pool!
+  timestamp: BigInt!
+  owner: Bytes!
+  origin: Bytes!
+  amount: BigDecimal!
+  amount0: BigDecimal!
+  amount1: BigDecimal!
+  amountUSD: BigDecimal!
+  tickLower: BigInt!
+  tickUpper: BigInt!
+  logIndex: BigInt
+}
+
+type PoolDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  pool: Pool!
+  liquidity: BigDecimal!
+  sqrtPrice: BigInt!
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+  tvlUSD: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
+  open: BigDecimal!
+  high: BigDecimal!
+  low: BigDecimal!
+  close: BigDecimal!
+}
+
+type PoolHourData @entity(immutable: false) {
+  id: ID!
+  periodStartUnix: Int!
+  pool: Pool!
+  liquidity: BigDecimal!
+  sqrtPrice: BigInt!
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+  tvlUSD: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
+  open: BigDecimal!
+  high: BigDecimal!
+  low: BigDecimal!
+  close: BigDecimal!
+}
+
+type TokenDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  token: Token!
+  volume: BigDecimal!
+  volumeUSD: BigDecimal!
+  priceUSD: BigDecimal!
+  totalValueLockedUSD: BigDecimal!
+  open: BigDecimal!
+  high: BigDecimal!
+  low: BigDecimal!
+  close: BigDecimal!
+}
+
+type Transaction @entity(immutable: false) {
+  id: ID!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  gasUsed: BigInt!
+  gasPrice: BigInt!
+  swaps: [Swap!]!
+  mints: [Mint!]!
+  burns: [Burn!]!
+}
+
+type MintondexDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  volumeUSD: BigDecimal!
+  tvlUSD: BigDecimal!
+  txCount: BigInt!
+  feesUSD: BigDecimal!
+}
