@@ -1,4 +1,4 @@
-const COINGECKO_URL = "https://api.coingecko.com/api/v3/simple/price?ids=shardeum&vs_currencies=usd";
+const COINGECKO_URL = "/api/shm-price";
 let cachedPrice: number = 0.00008762;
 let lastFetched: number = 0;
 const CACHE_TTL = 60 * 1000;
