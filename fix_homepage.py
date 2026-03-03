@@ -1,4 +1,6 @@
-import React from "react";
+import io
+
+content = """import React from "react";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { POOLS_QUERY, PROTOCOL_DAY_DATA_QUERY } from "../graphql/queries";
@@ -112,3 +114,8 @@ const HomePage: React.FC = () => {
   );
 };
 export default HomePage;
+"""
+
+with io.open("C:/mintondex/frontend/src/pages/HomePage.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved! length:", len(content))
