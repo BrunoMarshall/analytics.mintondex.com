@@ -2,7 +2,7 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { TOKEN_DETAIL_QUERY, TOKEN_DAY_DATA_QUERY } from "../graphql/queries";
-import { PriceTokenChart, VolumeChart } from "../components/Charts";
+import { PriceTokenChart, TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 import { useSHMHistory } from "../hooks/useSHMHistory";
@@ -68,9 +68,12 @@ const TokenDetailPage: React.FC = () => {
         <div className="card"><div className="card-title">Pairs</div><div className="card-value">{formatNumber(parseInt(token.poolCount || "0"), 0)}</div></div>
       </div>
 
-      <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <PriceTokenChart data={priceChartData} symbol={token.symbol} loading={isWshm ? shmLoading : false} />
+      <div className="charts-grid" style={{ marginBottom: 16 }}>
+        <TVLChart data={priceChartData.map((d: any) => ({ date: d.date, tvlUSD: d.tvlUSD }))} loading={isWshm ? shmLoading : false} />
         <VolumeChart data={volumeChartData} loading={false} />
+      </div>
+      <div style={{ marginBottom: 24 }}>
+        <PriceTokenChart data={priceChartData} symbol={token.symbol} loading={isWshm ? shmLoading : false} />
       </div>
 
       {pairs.length > 0 && (
