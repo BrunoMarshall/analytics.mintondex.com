@@ -1,8 +1,10 @@
-import React from "react";
+import io
+
+content = """import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { TOKEN_DETAIL_QUERY, TOKEN_DAY_DATA_QUERY } from "../graphql/queries";
-import { PriceTokenChart, VolumeChart } from "../components/Charts";
+import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 import { useSHMHistory } from "../hooks/useSHMHistory";
@@ -69,7 +71,7 @@ const TokenDetailPage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <PriceTokenChart data={priceChartData} symbol={token.symbol} loading={false} />
+        <TVLChart data={priceChartData} loading={false} title="Price (USD)" />
         <VolumeChart data={volumeChartData} loading={false} />
       </div>
 
@@ -107,3 +109,8 @@ const TokenDetailPage: React.FC = () => {
 };
 
 export default TokenDetailPage;
+"""
+
+with io.open("C:/mintondex/frontend/src/pages/TokenDetailPage.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved TokenDetailPage.tsx")

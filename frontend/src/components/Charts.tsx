@@ -11,9 +11,9 @@ const Tip = ({ active, payload, label, prefix="$" }: any) => {
   </div>;
 };
 
-export const TVLChart: React.FC<{data:{date:string,tvlUSD:string}[];loading?:boolean}> = ({data,loading=false}) => {
+export const TVLChart: React.FC<{data:{date:string,tvlUSD:string}[];loading?:boolean;title?:string}> = ({data,loading=false,title="Total Value Locked"}) => {
   const d = data.map(x=>({date:formatDateShort(x.date),value:parseFloat(x.tvlUSD)||0}));
-  return <div className="chart-container"><div className="chart-header"><div className="chart-title">Total Value Locked</div><div className="chart-current-value" style={{color:"var(--accent)"}}>{formatUSD(d[d.length-1]?.value??0,true)}</div></div>
+  return <div className="chart-container"><div className="chart-header"><div className="chart-title">{title}</div><div className="chart-current-value" style={{color:"var(--accent)"}}>{formatUSD(d[d.length-1]?.value??0,true)}</div></div>
   {loading?<div className="loading-state" style={{padding:40}}><div className="spinner"/></div>:
   <ResponsiveContainer width="100%" height={220}><AreaChart data={d}><defs><linearGradient id="tvlG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00d4ff" stopOpacity={0.3}/><stop offset="100%" stopColor="#00d4ff" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3"/><XAxis dataKey="date" tick={{fill:"var(--text-muted)",fontSize:10}} axisLine={false} tickLine={false}/><YAxis tick={{fill:"var(--text-muted)",fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>formatUSD(v,true)} width={70}/><Tooltip content={<Tip/>}/><Area type="monotone" dataKey="value" stroke="#00d4ff" strokeWidth={2} fill="url(#tvlG)" dot={false}/></AreaChart></ResponsiveContainer>}</div>;
 };
@@ -39,4 +39,12 @@ export const LiquidityChart: React.FC<{data:{date:string,liquidity:string}[];loa
   return <div className="chart-container"><div className="chart-header"><div className="chart-title">Pool Liquidity</div><div className="chart-current-value" style={{color:"var(--accent)"}}>{latest.toExponential(3)}</div></div>
   {loading?<div className="loading-state" style={{padding:40}}><div className="spinner"/></div>:
   <ResponsiveContainer width="100%" height={220}><AreaChart data={d}><defs><linearGradient id="lqG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a78bfa" stopOpacity={0.35}/><stop offset="100%" stopColor="#a78bfa" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3"/><XAxis dataKey="date" tick={{fill:"var(--text-muted)",fontSize:10}} axisLine={false} tickLine={false}/><YAxis tick={{fill:"var(--text-muted)",fontSize:10}} axisLine={false} tickLine={false} width={70} tickFormatter={v=>v.toExponential(1)}/><Tooltip content={<Tip prefix=""/>}/><Area type="monotone" dataKey="value" stroke="#a78bfa" strokeWidth={2} fill="url(#lqG)" dot={false}/></AreaChart></ResponsiveContainer>}</div>;
+};
+export const PriceTokenChart: React.FC<{data:{date:string,tvlUSD:string}[];symbol:string;loading?:boolean}> = ({data,symbol,loading=false}) => {
+  const d = data.map(x=>({date:formatDateShort(x.date),value:parseFloat(x.tvlUSD)||0}));
+  const latest = d[d.length-1]?.value??0;
+  return <div className="chart-container"><div className="chart-header"><div className="chart-title">{symbol} Price (USD)</div><div className="chart-current-value" style={{color:"var(--accent-yellow)"}}>${latest < 0.0001 ? latest.toFixed(10) : latest < 0.01 ? latest.toFixed(6) : latest.toFixed(4)}</div></div>
+  {loading?<div className="loading-state" style={{padding:40}}><div className="spinner"/></div>:
+  d.length === 0 ? <div style={{height:220,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text-muted)",fontSize:13}}>No price history yet — data builds up over time</div> :
+  <ResponsiveContainer width="100%" height={220}><AreaChart data={d}><defs><linearGradient id="ptG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffd166" stopOpacity={0.3}/><stop offset="100%" stopColor="#ffd166" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3"/><XAxis dataKey="date" tick={{fill:"var(--text-muted)",fontSize:10}} axisLine={false} tickLine={false}/><YAxis tick={{fill:"var(--text-muted)",fontSize:10}} axisLine={false} tickLine={false} width={80} tickFormatter={v=>v < 0.0001 ? v.toExponential(2) : "$"+v.toFixed(4)}/><Tooltip content={<Tip/>}/><Area type="monotone" dataKey="value" stroke="#ffd166" strokeWidth={2} fill="url(#ptG)" dot={false}/></AreaChart></ResponsiveContainer>}</div>;
 };
