@@ -6,6 +6,7 @@ import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 import PoolsPage from "./pages/PoolsPage";
 import PoolDetailPage from "./pages/PoolDetailPage";
+import TokenDetailPage from "./pages/TokenDetailPage";
 import TokensPage from "./pages/TokensPage";
 import "./styles/global.css";
 
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/pools" element={<PoolsPage />} />
             <Route path="/pools/:poolId" element={<PoolDetailPage />} />
+            <Route path="/tokens/:tokenId" element={<TokenDetailPage />} />
             <Route path="/tokens" element={<TokensPage />} />
           </Routes>
         </Layout>

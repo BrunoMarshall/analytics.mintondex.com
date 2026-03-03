@@ -3,10 +3,12 @@ import { useQuery } from "@apollo/client";
 import { TOKENS_QUERY } from "../graphql/queries";
 import { formatNumber, formatUSD } from "../utils/format";
 import TokenIcon from "../components/TokenIcon";
+import { useNavigate } from "react-router-dom";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 
 const TokensPage: React.FC = () => {
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
   const { data, loading, error } = useQuery(TOKENS_QUERY);
   const { shmPrice } = useSHMPrice();
   const tokens = (data?.tokens ?? []).filter((t: any) => {
@@ -41,7 +43,7 @@ const TokensPage: React.FC = () => {
               <tr><td colSpan={6}><div className="loading-state"><div className="spinner" /></div></td></tr>
             ) : (
               tokens.map((token: any, i: number) => (
-                <tr key={token.id}>
+                <tr key={token.id} onClick={() => navigate("/tokens/" + token.id)} style={{ cursor: "pointer" }}>
                   <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

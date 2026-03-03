@@ -80,3 +80,24 @@ export const PROTOCOL_DAY_DATA_QUERY = gql`
     }
   }
 `;
+
+export const TOKEN_DAY_DATA_QUERY = gql`
+    tokenDayDatas(first: 90, orderBy: date, orderDirection: asc,
+      where: { token: $tokenId, date_gt: $startTime }) {
+      date priceUSD volumeUSD txCount
+    }
+  }
+`;
+
+export const TOKEN_DETAIL_QUERY = gql`
+    token(id: $id) {
+      id symbol name decimals priceUSD tradeVolume txCount poolCount
+      pairsBase(first: 5, orderBy: volumeUSD, orderDirection: desc) {
+        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 volumeUSD txCount
+      }
+      pairsQuote(first: 5, orderBy: volumeUSD, orderDirection: desc) {
+        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 volumeUSD txCount
+      }
+    }
+  }
+`;

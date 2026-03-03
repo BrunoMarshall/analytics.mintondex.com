@@ -28,6 +28,9 @@ type Token @entity(immutable: false) {
   tradeVolume: BigDecimal!
   txCount: BigInt!
   poolCount: BigInt!
+  pairsBase: [Pair!]! @derivedFrom(field: "token0")
+  pairsQuote: [Pair!]! @derivedFrom(field: "token1")
+  tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
   priceUSD: BigDecimal!
 }
 
@@ -85,4 +88,13 @@ type Swap @entity(immutable: false) {
   amountUSD: BigDecimal!
   to: Bytes!
   logIndex: BigInt
+}
+
+type TokenDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  token: Token!
+  priceUSD: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
 }

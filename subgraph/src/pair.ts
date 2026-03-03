@@ -1,5 +1,5 @@
 import { Swap as SwapEvent, Mint as MintEvent, Burn as BurnEvent, Sync as SyncEvent } from "../generated/templates/Pair/Pair";
-import { Pair, Token, Swap, Mint, Burn, PairDayData, MintondexDayData } from "../generated/schema";
+import { Pair, Token, Swap, Mint, Burn, PairDayData, MintondexDayData, TokenDayData } from "../generated/schema";
 import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
 
 const ZERO_BD = BigDecimal.fromString("0");
@@ -47,6 +47,23 @@ function updateProtocolDayData(timestamp: BigInt, volumeUSD: BigDecimal): void {
   d.save();
 }
 
+function updateTokenDayData(token: Token, timestamp: BigInt, volumeUSD: BigDecimal): void {
+  let dayIndex = timestamp.toI32() / 86400;
+  let id = token.id.concat("-").concat(BigInt.fromI32(dayIndex).toString());
+  let d = TokenDayData.load(id);
+  if (d === null) {
+    d = new TokenDayData(id);
+    d.date = dayIndex * 86400;
+    d.token = token.id;
+    d.volumeUSD = ZERO_BD;
+    d.txCount = BigInt.fromI32(0);
+  }
+  d.priceUSD = token.priceUSD;
+  d.volumeUSD = d.volumeUSD.plus(volumeUSD);
+  d.txCount = d.txCount.plus(BigInt.fromI32(1));
+  d.save();
+}
+
 export function handleSync(event: SyncEvent): void {
   let pair = Pair.load(event.address.toHexString());
   if (pair === null) return;
@@ -61,6 +78,8 @@ export function handleSync(event: SyncEvent): void {
   t0.priceUSD = getTokenPriceUSD(t0.id, pair as Pair);
   t1.priceUSD = getTokenPriceUSD(t1.id, pair as Pair);
   t0.save(); t1.save(); pair.save();
+  updateTokenDayData(t0 as Token, event.block.timestamp, ZERO_BD);
+  updateTokenDayData(t1 as Token, event.block.timestamp, ZERO_BD);
   updatePairDayData(event.block.timestamp, pair as Pair);
 }
 
@@ -115,6 +134,8 @@ export function handleSwap(event: SwapEvent): void {
   t0.tradeVolume = t0.tradeVolume.plus(vol0); t0.txCount = t0.txCount.plus(BigInt.fromI32(1));
   t1.tradeVolume = t1.tradeVolume.plus(vol1); t1.txCount = t1.txCount.plus(BigInt.fromI32(1));
   t0.save(); t1.save(); pair.save();
+  updateTokenDayData(t0 as Token, event.block.timestamp, ZERO_BD);
+  updateTokenDayData(t1 as Token, event.block.timestamp, ZERO_BD);
   let swap = new Swap(event.transaction.hash.toHexString().concat("-").concat(event.logIndex.toString()));
   swap.pair = pair.id; swap.timestamp = event.block.timestamp;
   swap.sender = event.params.sender; swap.to = event.params.to;
