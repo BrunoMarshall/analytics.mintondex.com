@@ -53,7 +53,7 @@ const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loa
           </thead>
           <tbody>
             {filtered.map((pool, i) => {
-              const tvl = (parseFloat(pool.reserve0 || "0") * parseFloat(pool.token1Price || "0") + parseFloat(pool.reserve1 || "0")) * shmPrice;
+              const tvl = parseFloat(pool.reserve1 || "0") * 2 * shmPrice;
               return (
                 <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id.toLowerCase())}>
                   <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>

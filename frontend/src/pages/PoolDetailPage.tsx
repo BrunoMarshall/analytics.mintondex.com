@@ -28,11 +28,11 @@ const PoolDetailPage: React.FC = () => {
   // TVL = (reserve0 * token1Price + reserve1) * shmPrice
   const reserve0 = parseFloat(pool?.reserve0 || "0");
   const reserve1 = parseFloat(pool?.reserve1 || "0");
-  const t1PerT0 = parseFloat(pool?.token1Price || "0"); // WSHM per MINT
-  const t0PerT1 = parseFloat(pool?.token0Price || "0"); // MINT per WSHM
-  const tvl = pool ? (reserve0 * t1PerT0 + reserve1) * shmPrice : 0;
-  const mintPriceUSD = t1PerT0 * shmPrice;
-  const wshmPriceUSD = shmPrice;
+  // token1Price = reserve1/reserve0 = WSHM per token0
+  const t1PerT0 = reserve0 > 0 ? reserve1 / reserve0 : 0; // WSHM per token0
+  const tvl = pool ? reserve1 * 2 * shmPrice : 0; // both sides equal value
+  const mintPriceUSD = t1PerT0 * shmPrice; // token0 price in USD
+  const wshmPriceUSD = shmPrice; // WSHM = SHM
 
   if (loading) return <div className="loading-state"><div className="spinner" /></div>;
   if (error) return <div className="error-state">Query error: {error.message}</div>;
