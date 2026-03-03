@@ -9,12 +9,12 @@ import { tokenPriceToUSD } from "../utils/coingecko";
 import TokenIcon from "../components/TokenIcon";
 
 const PoolDetailPage: React.FC = () => {
-  const { id: rawId } = useParams<{ id: string }>(); const id = rawId?.toLowerCase();
+  const { id: rawId } = useParams<{ id: string }>(); const id = (rawId ?? "").toLowerCase();
   const navigate = useNavigate();
   const { shmPrice } = useSHMPrice();
   const [activeTab, setActiveTab] = useState<"overview" | "swaps" | "positions">("overview");
 
-  const { data, loading, error } = useQuery(POOL_DETAIL_QUERY, { variables: { id }, fetchPolicy: "network-only" });
+  const { data, loading, error } = useQuery(POOL_DETAIL_QUERY, { variables: { id }, fetchPolicy: "network-only", skip: !id });
   const { data: dayData } = useQuery(POOL_DAY_DATA_QUERY, { variables: { poolId: id, startTime: daysAgo(90) } });
   const { data: swapsData } = useQuery(RECENT_SWAPS_QUERY, { variables: { poolId: id, first: 25 } });
   const { data: posData } = useQuery(LP_POSITIONS_QUERY, { variables: { poolId: id } });
