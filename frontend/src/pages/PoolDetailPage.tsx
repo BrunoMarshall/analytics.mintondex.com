@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { POOL_DETAIL_QUERY, POOL_DAY_DATA_QUERY, RECENT_SWAPS_QUERY, LP_POSITIONS_QUERY } from "../graphql/queries";
 import { TVLChart, VolumeChart } from "../components/Charts";
-import { formatUSD, formatNumber, hoursAgo, daysAgo } from "../utils/format";
+import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 import { tokenPriceToUSD } from "../utils/coingecko";
 import TokenIcon from "../components/TokenIcon";
