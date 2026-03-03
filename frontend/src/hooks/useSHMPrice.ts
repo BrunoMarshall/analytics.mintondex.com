@@ -3,7 +3,7 @@ import { getSHMPriceUSD } from "../utils/coingecko";
 
 export function useSHMPrice() {
   const [shmPrice, setShmPrice] = useState<number>(0.07);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
