@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import io
+
+content = """import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { POOL_DETAIL_QUERY, POOL_DAY_DATA_QUERY, RECENT_SWAPS_QUERY, LP_POSITIONS_QUERY } from "../graphql/queries";
@@ -150,3 +152,8 @@ const PoolDetailPage: React.FC = () => {
   );
 };
 export default PoolDetailPage;
+"""
+
+with io.open("C:/mintondex/frontend/src/pages/PoolDetailPage.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved PoolDetailPage.tsx, length:", len(content))

@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import io
+
+content = """import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatUSD, formatNumber } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
@@ -86,3 +88,8 @@ const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loa
 };
 
 export default PoolsTable;
+"""
+
+with io.open("C:/mintondex/frontend/src/components/PoolsTable.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved PoolsTable.tsx, length:", len(content))
