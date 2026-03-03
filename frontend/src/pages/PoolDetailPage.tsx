@@ -24,9 +24,15 @@ const PoolDetailPage: React.FC = () => {
   const t1 = pool?.token1;
   const pairDayDatas = dayData?.pairDayDatas ?? [];
 
-  const tvl = pool
-    ? parseFloat(pool.reserve0 || "0") * shmPrice + parseFloat(pool.reserve1 || "0") * tokenPriceToUSD(pool.token1Price || "0", shmPrice)
-    : 0;
+  // In V2: token1Price = how much token1 (WSHM) per token0 (MINT)
+  // TVL = (reserve0 * token1Price + reserve1) * shmPrice
+  const reserve0 = parseFloat(pool?.reserve0 || "0");
+  const reserve1 = parseFloat(pool?.reserve1 || "0");
+  const t1PerT0 = parseFloat(pool?.token1Price || "0"); // WSHM per MINT
+  const t0PerT1 = parseFloat(pool?.token0Price || "0"); // MINT per WSHM
+  const tvl = pool ? (reserve0 * t1PerT0 + reserve1) * shmPrice : 0;
+  const mintPriceUSD = t1PerT0 * shmPrice;
+  const wshmPriceUSD = shmPrice;
 
   if (loading) return <div className="loading-state"><div className="spinner" /></div>;
   if (error) return <div className="error-state">Query error: {error.message}</div>;
@@ -55,17 +61,17 @@ const PoolDetailPage: React.FC = () => {
       </div>
 
       <div className="stats-grid" style={{ marginBottom: 24 }}>
-        <div className="card"><div className="card-title">TVL</div><div className="card-value">{formatUSD(tvl, true)}</div></div>
-        <div className="card"><div className="card-title">Total Volume</div><div className="card-value">{formatUSD(parseFloat(pool.volumeUSD || "0") * shmPrice, true)}</div></div>
+        <div className="card"><div className="card-title">TVL</div><div className="card-value">{formatUSD(tvl, false)}</div></div>
+        <div className="card"><div className="card-title">Total Volume</div><div className="card-value">{formatUSD(parseFloat(pool.volumeUSD || "0") * shmPrice, false)}</div></div>
         <div className="card"><div className="card-title">Transactions</div><div className="card-value">{formatNumber(parseInt(pool.txCount || "0"), 0)}</div></div>
-        <div className="card"><div className="card-title">{t0?.symbol} Price</div><div className="card-value">{formatUSD(parseFloat(pool.token0Price || "0") * shmPrice, false)}</div></div>
-        <div className="card"><div className="card-title">{t1?.symbol} Price</div><div className="card-value">{formatUSD(parseFloat(pool.token1Price || "0") * shmPrice, false)}</div></div>
-        <div className="card"><div className="card-title">{t0?.symbol} Reserve</div><div className="card-value">{formatNumber(parseFloat(pool.reserve0 || "0"), 2)}</div></div>
-        <div className="card"><div className="card-title">{t1?.symbol} Reserve</div><div className="card-value">{formatNumber(parseFloat(pool.reserve1 || "0"), 2)}</div></div>
+        <div className="card"><div className="card-title">{t0?.symbol} Price</div><div className="card-value">{formatUSD(mintPriceUSD, false)}</div></div>
+        <div className="card"><div className="card-title">{t1?.symbol} Price</div><div className="card-value">{formatUSD(wshmPriceUSD, false)}</div></div>
+        <div className="card"><div className="card-title">{t0?.symbol} Reserve</div><div className="card-value">{parseFloat(pool.reserve0 || "0").toLocaleString("en-US", {maximumFractionDigits: 4})}</div></div>
+        <div className="card"><div className="card-title">{t1?.symbol} Reserve</div><div className="card-value">{parseFloat(pool.reserve1 || "0").toLocaleString("en-US", {maximumFractionDigits: 4})}</div></div>
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <TVLChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: (parseFloat(d.reserve0 || "0") * shmPrice + parseFloat(d.reserve1 || "0") * shmPrice).toString() }))} loading={false} />
+        <TVLChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: ((parseFloat(d.reserve0 || "0") * parseFloat(d.token1Price || t1PerT0.toString()) + parseFloat(d.reserve1 || "0")) * shmPrice).toString() }))} loading={false} />
         <VolumeChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString() }))} loading={false} />
       </div>
 
@@ -129,9 +135,9 @@ const PoolDetailPage: React.FC = () => {
                   <TokenIcon address={token?.id} symbol={token?.symbol} size={28} />
                   <div>
                     <div style={{ fontWeight: 700, fontFamily: "var(--font-heading)" }}>{token?.symbol}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>{formatNumber(parseFloat(reserve || "0"), 4)}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>{parseFloat(reserve || "0").toLocaleString("en-US", {maximumFractionDigits: 4})}</div>
                   </div>
-                  <div style={{ marginLeft: "auto", fontWeight: 700, color: "var(--accent)" }}>{formatUSD(parseFloat(reserve || "0") * shmPrice, true)}</div>
+                  <div style={{ marginLeft: "auto", fontWeight: 700, color: "var(--accent)" }}>{formatUSD(parseFloat(reserve || "0") * (reserve === pool.reserve0 ? mintPriceUSD : wshmPriceUSD), false)}</div>
                 </div>
               ))}
             </div>
@@ -142,7 +148,7 @@ const PoolDetailPage: React.FC = () => {
               <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Created</span><span style={{ fontFamily: "var(--font-mono)" }}>{new Date(parseInt(pool.createdAtTimestamp) * 1000).toLocaleDateString()}</span></div>
               <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Total Supply (LP)</span><span style={{ fontFamily: "var(--font-mono)" }}>{formatNumber(parseFloat(pool.totalSupply || "0"), 4)}</span></div>
               <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Fee</span><span style={{ color: "var(--accent)", fontWeight: 700 }}>0.3%</span></div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Exchange Rate</span><span style={{ fontFamily: "var(--font-mono)" }}>1 {t0?.symbol} = {formatNumber(parseFloat(pool.token0Price || "0"), 6)} {t1?.symbol}</span></div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Exchange Rate</span><span style={{ fontFamily: "var(--font-mono)" }}>1 {t0?.symbol} = {formatNumber(t1PerT0, 2)} {t1?.symbol}</span></div>
             </div>
           </div>
         </div>
