@@ -1,12 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&family=Space+Mono:wght@400;700&display=swap");
 
 :root {
-  --bg-primary: #f0f2ff;
+  --bg-primary: #f8f9fa;
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --bg-hover: #f8f9ff;
+  --bg-hover: #f0f2f5;
   --border: #e2e8f0;
-  --border-light: #c7d2fe;
+  --border-light: #dee2e6;
   --accent: #667eea;
   --accent-purple: #764ba2;
   --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

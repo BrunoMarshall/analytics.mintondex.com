@@ -29,8 +29,8 @@ const HomePage: React.FC = () => {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Mintondex Analytics</h1>
-        <p className="page-subtitle">Real-time on-chain analytics for Mintondex on Shardeum</p>
+        <h1 className="page-title">MintonDex Analytics</h1>
+        <p className="page-subtitle">Real-time on-chain analytics for MintonDex on Shardeum</p>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", background: "linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%)", border: "2px solid var(--border-light)", borderRadius: "var(--radius)", padding: "16px 24px", marginBottom: 28, boxShadow: "var(--shadow)" }}>

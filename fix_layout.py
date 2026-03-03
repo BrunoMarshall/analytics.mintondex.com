@@ -1,4 +1,6 @@
-import React from "react";
+import io
+
+content = """import React from "react";
 import { NavLink } from "react-router-dom";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -40,3 +42,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 export default Layout;
+"""
+
+with io.open("C:/mintondex/frontend/src/components/Layout.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved Layout.tsx, length:", len(content))
