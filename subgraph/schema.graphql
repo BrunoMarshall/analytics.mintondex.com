@@ -96,5 +96,6 @@ type TokenDayData @entity(immutable: false) {
   token: Token!
   priceUSD: BigDecimal!
   volumeUSD: BigDecimal!
+  tvlUSD: BigDecimal!
   txCount: BigInt!
 }

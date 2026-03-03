@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { TOKEN_DETAIL_QUERY, TOKEN_DAY_DATA_QUERY } from "../graphql/queries";
-import { VolumeChart } from "../components/Charts";
+import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 import { useSHMHistory } from "../hooks/useSHMHistory";
@@ -129,6 +129,7 @@ const TokenDetailPage: React.FC = () => {
 
       {/* TVL + Volume side by side */}
       <div className="charts-grid" style={{ marginBottom: 24 }}>
+        <TVLChart data={tokenDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: (parseFloat(d.priceUSD || "0") * shmPrice * parseFloat(d.txCount || "1")).toString() }))} loading={false} />
         <VolumeChart data={volumeChartData} loading={false} />
       </div>
 

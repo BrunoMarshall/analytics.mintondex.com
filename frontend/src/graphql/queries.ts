@@ -85,7 +85,7 @@ export const TOKEN_DAY_DATA_QUERY = gql`
   query GetTokenDayData($tokenId: String!, $startTime: Int!) {
     tokenDayDatas(first: 90, orderBy: date, orderDirection: asc,
       where: { token: $tokenId, date_gt: $startTime }) {
-      date priceUSD volumeUSD txCount
+      date priceUSD volumeUSD tvlUSD txCount
     }
   }
 `;

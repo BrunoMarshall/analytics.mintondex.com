@@ -1179,6 +1179,19 @@ export class TokenDayData extends Entity {
     this.set("volumeUSD", Value.fromBigDecimal(value));
   }
 
+  get tvlUSD(): BigDecimal {
+    let value = this.get("tvlUSD");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set tvlUSD(value: BigDecimal) {
+    this.set("tvlUSD", Value.fromBigDecimal(value));
+  }
+
   get txCount(): BigInt {
     let value = this.get("txCount");
     if (!value || value.kind == ValueKind.NULL) {
