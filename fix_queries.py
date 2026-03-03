@@ -1,4 +1,6 @@
-import { ApolloClient, InMemoryCache, HttpLink, gql } from "@apollo/client";
+import io
+
+content = """import { ApolloClient, InMemoryCache, HttpLink, gql } from "@apollo/client";
 
 export const SUBGRAPH_URL = "https://graph.analytics.mintondex.com/subgraphs/name/mintondex-v2";
 
@@ -80,3 +82,8 @@ export const PROTOCOL_DAY_DATA_QUERY = gql`
     }
   }
 `;
+"""
+
+with io.open("C:/mintondex/frontend/src/graphql/queries.ts", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved queries.ts, length:", len(content))

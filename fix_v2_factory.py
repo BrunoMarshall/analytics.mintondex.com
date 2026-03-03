@@ -1,4 +1,5 @@
-import { PairCreated } from "../generated/Factory/Factory";
+import io
+content = """import { PairCreated } from "../generated/Factory/Factory";
 import { Pair as PairTemplate } from "../generated/templates";
 import { Pair, Token } from "../generated/schema";
 import { ERC20 } from "../generated/Factory/ERC20";
@@ -49,3 +50,7 @@ export function handlePairCreated(event: PairCreated): void {
   pair.save();
   PairTemplate.create(event.params.pair);
 }
+"""
+with io.open("C:/mintondex/subgraph/src/factory.ts","w",encoding="utf-8") as f:
+    f.write(content)
+print("saved factory.ts")

@@ -24,7 +24,7 @@ const PoolDetailPage: React.FC = () => {
   if (error) return <div className="error-state"><strong>Pool not found</strong><p style={{ marginTop: 8 }}>{error.message}</p></div>;
 
   const pool = poolData?.pool;
-  const poolDayData = dayData?.poolDayDatas ?? [];
+  const poolDayData = dayData?.pairDayDatas ?? [];
   const swaps = swapData?.swaps ?? [];
   const mints = lpData?.mints ?? [];
   const burns = lpData?.burns ?? [];
@@ -32,7 +32,7 @@ const PoolDetailPage: React.FC = () => {
   const t1 = pool?.token1;
   const token0PriceUSD = pool ? tokenPriceToUSD(pool.token0Price, shmPrice) : 0;
   const token1PriceUSD = pool ? tokenPriceToUSD(pool.token1Price, shmPrice) : 0;
-  const tvlUSD = pool ? parseFloat(pool.totalValueLockedToken0 || "0") * shmPrice + parseFloat(pool.totalValueLockedToken1 || "0") * token1PriceUSD : 0;
+  const tvlUSD = pool ? parseFloat(pool.reserve0 || "0") * shmPrice + parseFloat(pool.reserve1 || "0") * token1PriceUSD : 0;
   const volumeUSD = pool ? parseFloat(pool.volumeUSD || "0") * shmPrice : 0;
   const explorerUrl = poolId ? getExplorerUrl(poolId) : "#";
 
@@ -48,7 +48,7 @@ const PoolDetailPage: React.FC = () => {
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 700 }}>
               {t0?.symbol ?? "-"}/{t1?.symbol ?? "-"}
-              {pool && <span className="fee-badge" style={{ fontSize: 12 }}>{formatFee(parseInt(pool.feeTier))}</span>}
+              {pool && <span className="fee-badge" style={{ fontSize: 12 }}>{formatFee(parseInt("3000"))}</span>}
             </h1>
             {poolId && <a className="address-chip" href={explorerUrl} target="_blank" rel="noopener noreferrer">{poolId}</a>}
           </div>
@@ -65,11 +65,11 @@ const PoolDetailPage: React.FC = () => {
       <div className="stats-grid" style={{ marginBottom: 24 }}>
         <StatCard title="TVL" value={formatUSD(tvlUSD, true)} loading={poolLoading} />
         <StatCard title="Total Volume" value={formatUSD(volumeUSD, true)} loading={poolLoading} />
-        <StatCard title="Transactions" value={pool ? formatNumber(parseInt(pool.txCount), 0) : "—"} loading={poolLoading} />
-        <StatCard title={(t0?.symbol ?? "Token0") + " Price"} value={pool ? "$" + token0PriceUSD.toFixed(6) : "—"} subValue={pool ? parseFloat(pool.token0Price).toFixed(6) + " WSHM" : undefined} loading={poolLoading} />
-        <StatCard title={(t1?.symbol ?? "Token1") + " Price"} value={pool ? "$" + token1PriceUSD.toFixed(6) : "—"} subValue={pool ? parseFloat(pool.token1Price).toFixed(6) + " WSHM" : undefined} loading={poolLoading} />
-        <StatCard title={"TVL " + (t0?.symbol ?? "T0")} value={pool ? formatNumber(parseFloat(pool.totalValueLockedToken0)) + " " + (t0?.symbol ?? "") : "—"} loading={poolLoading} />
-        <StatCard title={"TVL " + (t1?.symbol ?? "T1")} value={pool ? formatNumber(parseFloat(pool.totalValueLockedToken1)) + " " + (t1?.symbol ?? "") : "—"} loading={poolLoading} />
+        <StatCard title="Transactions" value={pool ? formatNumber(parseInt(pool.txCount), 0) : "Â—"} loading={poolLoading} />
+        <StatCard title={(t0?.symbol ?? "Token0") + " Price"} value={pool ? "$" + token0PriceUSD.toFixed(6) : "Â—"} subValue={pool ? parseFloat(pool.token0Price).toFixed(6) + " WSHM" : undefined} loading={poolLoading} />
+        <StatCard title={(t1?.symbol ?? "Token1") + " Price"} value={pool ? "$" + token1PriceUSD.toFixed(6) : "Â—"} subValue={pool ? parseFloat(pool.token1Price).toFixed(6) + " WSHM" : undefined} loading={poolLoading} />
+        <StatCard title={"TVL " + (t0?.symbol ?? "T0")} value={pool ? formatNumber(parseFloat(pool.reserve0)) + " " + (t0?.symbol ?? "") : "Â—"} loading={poolLoading} />
+        <StatCard title={"TVL " + (t1?.symbol ?? "T1")} value={pool ? formatNumber(parseFloat(pool.reserve1)) + " " + (t1?.symbol ?? "") : "Â—"} loading={poolLoading} />
       </div>
 
       <div className="charts-grid">

@@ -1,4 +1,5 @@
-type Pair @entity(immutable: false) {
+import io
+schema = """type Pair @entity {
   id: ID!
   token0: Token!
   token1: Token!
@@ -19,7 +20,7 @@ type Pair @entity(immutable: false) {
   swaps: [Swap!]! @derivedFrom(field: "pair")
 }
 
-type Token @entity(immutable: false) {
+type Token @entity {
   id: ID!
   symbol: String!
   name: String!
@@ -31,7 +32,7 @@ type Token @entity(immutable: false) {
   priceUSD: BigDecimal!
 }
 
-type MintondexDayData @entity(immutable: false) {
+type MintondexDayData @entity {
   id: ID!
   date: Int!
   volumeUSD: BigDecimal!
@@ -39,7 +40,7 @@ type MintondexDayData @entity(immutable: false) {
   txCount: BigInt!
 }
 
-type PairDayData @entity(immutable: false) {
+type PairDayData @entity {
   id: ID!
   date: Int!
   pair: Pair!
@@ -51,7 +52,7 @@ type PairDayData @entity(immutable: false) {
   txCount: BigInt!
 }
 
-type Mint @entity(immutable: false) {
+type Mint @entity {
   id: ID!
   pair: Pair!
   timestamp: BigInt!
@@ -62,7 +63,7 @@ type Mint @entity(immutable: false) {
   logIndex: BigInt
 }
 
-type Burn @entity(immutable: false) {
+type Burn @entity {
   id: ID!
   pair: Pair!
   timestamp: BigInt!
@@ -73,7 +74,7 @@ type Burn @entity(immutable: false) {
   logIndex: BigInt
 }
 
-type Swap @entity(immutable: false) {
+type Swap @entity {
   id: ID!
   pair: Pair!
   timestamp: BigInt!
@@ -86,3 +87,7 @@ type Swap @entity(immutable: false) {
   to: Bytes!
   logIndex: BigInt
 }
+"""
+with io.open("C:/mintondex/subgraph/schema.graphql","w",encoding="utf-8") as f:
+    f.write(schema)
+print("saved schema.graphql")

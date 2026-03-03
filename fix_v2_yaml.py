@@ -1,4 +1,5 @@
-specVersion: 0.0.5
+import io
+yaml = """specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
@@ -50,7 +51,7 @@ templates:
         - name: ERC20
           file: ./abis/ERC20.json
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256,indexed address)
+        - event: Mint(indexed address,uint256,uint256)
           handler: handleMint
         - event: Burn(indexed address,uint256,uint256,indexed address)
           handler: handleBurn
@@ -59,3 +60,7 @@ templates:
         - event: Sync(uint112,uint112)
           handler: handleSync
       file: ./src/pair.ts
+"""
+with io.open("C:/mintondex/subgraph/subgraph.yaml","w",encoding="utf-8") as f:
+    f.write(yaml)
+print("saved subgraph.yaml")

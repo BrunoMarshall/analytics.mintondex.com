@@ -10,16 +10,16 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
-export class PoolCreated extends ethereum.Event {
-  get params(): PoolCreated__Params {
-    return new PoolCreated__Params(this);
+export class PairCreated extends ethereum.Event {
+  get params(): PairCreated__Params {
+    return new PairCreated__Params(this);
   }
 }
 
-export class PoolCreated__Params {
-  _event: PoolCreated;
+export class PairCreated__Params {
+  _event: PairCreated;
 
-  constructor(event: PoolCreated) {
+  constructor(event: PairCreated) {
     this._event = event;
   }
 
@@ -31,21 +31,141 @@ export class PoolCreated__Params {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get fee(): i32 {
-    return this._event.parameters[2].value.toI32();
+  get pair(): Address {
+    return this._event.parameters[2].value.toAddress();
   }
 
-  get tickSpacing(): i32 {
-    return this._event.parameters[3].value.toI32();
-  }
-
-  get pool(): Address {
-    return this._event.parameters[4].value.toAddress();
+  get param3(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
 export class Factory extends ethereum.SmartContract {
   static bind(address: Address): Factory {
     return new Factory("Factory", address);
+  }
+
+  createPair(tokenA: Address, tokenB: Address): Address {
+    let result = super.call(
+      "createPair",
+      "createPair(address,address):(address)",
+      [ethereum.Value.fromAddress(tokenA), ethereum.Value.fromAddress(tokenB)]
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_createPair(
+    tokenA: Address,
+    tokenB: Address
+  ): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "createPair",
+      "createPair(address,address):(address)",
+      [ethereum.Value.fromAddress(tokenA), ethereum.Value.fromAddress(tokenB)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  getPair(param0: Address, param1: Address): Address {
+    let result = super.call("getPair", "getPair(address,address):(address)", [
+      ethereum.Value.fromAddress(param0),
+      ethereum.Value.fromAddress(param1)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_getPair(param0: Address, param1: Address): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "getPair",
+      "getPair(address,address):(address)",
+      [ethereum.Value.fromAddress(param0), ethereum.Value.fromAddress(param1)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  allPairsLength(): BigInt {
+    let result = super.call("allPairsLength", "allPairsLength():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_allPairsLength(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "allPairsLength",
+      "allPairsLength():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  allPairs(param0: BigInt): Address {
+    let result = super.call("allPairs", "allPairs(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_allPairs(param0: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall("allPairs", "allPairs(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+}
+
+export class CreatePairCall extends ethereum.Call {
+  get inputs(): CreatePairCall__Inputs {
+    return new CreatePairCall__Inputs(this);
+  }
+
+  get outputs(): CreatePairCall__Outputs {
+    return new CreatePairCall__Outputs(this);
+  }
+}
+
+export class CreatePairCall__Inputs {
+  _call: CreatePairCall;
+
+  constructor(call: CreatePairCall) {
+    this._call = call;
+  }
+
+  get tokenA(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get tokenB(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+}
+
+export class CreatePairCall__Outputs {
+  _call: CreatePairCall;
+
+  constructor(call: CreatePairCall) {
+    this._call = call;
+  }
+
+  get pair(): Address {
+    return this._call.outputValues[0].value.toAddress();
   }
 }

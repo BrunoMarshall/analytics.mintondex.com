@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
   const { shmPrice } = useSHMPrice();
   const { data: poolsData, loading: poolsLoading } = useQuery(POOLS_QUERY, { variables: { first: 100, skip: 0 } });
   const { data: protocolData, loading: protocolLoading } = useQuery(PROTOCOL_DAY_DATA_QUERY, { variables: { startTime } });
-  const pools = poolsData?.pools ?? [];
+  const pools = poolsData?.pairs ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
   const totalTVL = pools.reduce((sum: number, p: any) => {
     const t0 = parseFloat(p.totalValueLockedToken0 || "0") * shmPrice;
@@ -85,7 +85,7 @@ const HomePage: React.FC = () => {
                 <tr><td colSpan={5}><div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div></td></tr>
               ) : (
                 pools.slice(0, 5).map((pool: any, i: number) => {
-                  const poolTVL = parseFloat(pool.totalValueLockedToken0 || "0") * shmPrice + parseFloat(pool.totalValueLockedToken1 || "0") * tokenPriceToUSD(pool.token1Price || "0", shmPrice);
+                  const poolTVL = parseFloat(pool.reserve0 || "0") * shmPrice + parseFloat(pool.reserve1 || "0") * tokenPriceToUSD(pool.token1Price || "0", shmPrice);
                   return (
                     <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)}>
                       <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
@@ -95,7 +95,7 @@ const HomePage: React.FC = () => {
                             <TokenIcon address={pool.token0.id} symbol={pool.token0.symbol} size={28} />
                             <TokenIcon address={pool.token1.id} symbol={pool.token1.symbol} size={28} />
                           </div>
-                          <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">{(parseInt(pool.feeTier) / 10000).toFixed(2)}%</span></span>
+                          <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">{(parseInt("3000") / 10000).toFixed(2)}%</span></span>
                         </div>
                       </td>
                       <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(poolTVL, true)}</td>
