@@ -8,8 +8,7 @@ import {
   store,
   Bytes,
   BigInt,
-  BigDecimal,
-  Int8,
+  BigDecimal
 } from "@graphprotocol/graph-ts";
 
 export class Token extends Entity {
@@ -24,7 +23,7 @@ export class Token extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Token must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type Token must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("Token", id.toString(), this);
     }
@@ -159,7 +158,7 @@ export class Token extends Entity {
     return new TokenDayDataLoader(
       "Token",
       this.get("id")!.toString(),
-      "tokenDayData",
+      "tokenDayData"
     );
   }
 }
@@ -176,7 +175,7 @@ export class Pool extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Pool must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type Pool must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("Pool", id.toString(), this);
     }
@@ -418,7 +417,7 @@ export class Pool extends Entity {
     return new PoolDayDataLoader(
       "Pool",
       this.get("id")!.toString(),
-      "poolDayData",
+      "poolDayData"
     );
   }
 
@@ -426,7 +425,7 @@ export class Pool extends Entity {
     return new PoolHourDataLoader(
       "Pool",
       this.get("id")!.toString(),
-      "poolHourData",
+      "poolHourData"
     );
   }
 }
@@ -443,7 +442,7 @@ export class Swap extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Swap must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type Swap must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("Swap", id.toString(), this);
     }
@@ -617,7 +616,7 @@ export class Mint extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Mint must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type Mint must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("Mint", id.toString(), this);
     }
@@ -821,7 +820,7 @@ export class Burn extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Burn must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type Burn must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("Burn", id.toString(), this);
     }
@@ -1008,7 +1007,7 @@ export class PoolDayData extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type PoolDayData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type PoolDayData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("PoolDayData", id.toString(), this);
     }
@@ -1016,7 +1015,7 @@ export class PoolDayData extends Entity {
 
   static loadInBlock(id: string): PoolDayData | null {
     return changetype<PoolDayData | null>(
-      store.get_in_block("PoolDayData", id),
+      store.get_in_block("PoolDayData", id)
     );
   }
 
@@ -1219,7 +1218,7 @@ export class PoolHourData extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type PoolHourData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type PoolHourData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("PoolHourData", id.toString(), this);
     }
@@ -1227,7 +1226,7 @@ export class PoolHourData extends Entity {
 
   static loadInBlock(id: string): PoolHourData | null {
     return changetype<PoolHourData | null>(
-      store.get_in_block("PoolHourData", id),
+      store.get_in_block("PoolHourData", id)
     );
   }
 
@@ -1430,7 +1429,7 @@ export class TokenDayData extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type TokenDayData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type TokenDayData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("TokenDayData", id.toString(), this);
     }
@@ -1438,7 +1437,7 @@ export class TokenDayData extends Entity {
 
   static loadInBlock(id: string): TokenDayData | null {
     return changetype<TokenDayData | null>(
-      store.get_in_block("TokenDayData", id),
+      store.get_in_block("TokenDayData", id)
     );
   }
 
@@ -1602,7 +1601,7 @@ export class Transaction extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Transaction must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type Transaction must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("Transaction", id.toString(), this);
     }
@@ -1610,7 +1609,7 @@ export class Transaction extends Entity {
 
   static loadInBlock(id: string): Transaction | null {
     return changetype<Transaction | null>(
-      store.get_in_block("Transaction", id),
+      store.get_in_block("Transaction", id)
     );
   }
 
@@ -1735,7 +1734,7 @@ export class MintondexDayData extends Entity {
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type MintondexDayData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+        `Entities of type MintondexDayData must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
       store.set("MintondexDayData", id.toString(), this);
     }
@@ -1743,13 +1742,13 @@ export class MintondexDayData extends Entity {
 
   static loadInBlock(id: string): MintondexDayData | null {
     return changetype<MintondexDayData | null>(
-      store.get_in_block("MintondexDayData", id),
+      store.get_in_block("MintondexDayData", id)
     );
   }
 
   static load(id: string): MintondexDayData | null {
     return changetype<MintondexDayData | null>(
-      store.get("MintondexDayData", id),
+      store.get("MintondexDayData", id)
     );
   }
 

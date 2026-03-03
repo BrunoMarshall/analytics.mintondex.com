@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, HttpLink, gql } from "@apollo/client";
 
-export const SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_cmmae7z9keb2y010gd66x6jo1/subgraphs/mintondex/v0.0.1/gn";
+export const SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_cmmae7z9keb2y010gd66x6jo1/subgraphs/mintondex/v0.0.2/gn";
 
 export const client = new ApolloClient({
   link: new HttpLink({ uri: SUBGRAPH_URL }),
