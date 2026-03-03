@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import io
+
+content = """import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { TOKEN_DETAIL_QUERY, TOKEN_DAY_DATA_QUERY } from "../graphql/queries";
@@ -166,3 +168,8 @@ const TokenDetailPage: React.FC = () => {
 };
 
 export default TokenDetailPage;
+"""
+
+with io.open("C:/mintondex/frontend/src/pages/TokenDetailPage.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved")
