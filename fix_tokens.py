@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import io
+
+content = """import React, { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { TOKENS_QUERY } from "../graphql/queries";
 import { formatNumber, formatUSD } from "../utils/format";
@@ -67,3 +69,8 @@ const TokensPage: React.FC = () => {
 };
 
 export default TokensPage;
+"""
+
+with io.open("C:/mintondex/frontend/src/pages/TokensPage.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("saved TokensPage.tsx")
