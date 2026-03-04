@@ -15,7 +15,7 @@ const PoolDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"overview" | "swaps" | "positions">("overview");
 
   const { data, loading, error } = useQuery(POOL_DETAIL_QUERY, { variables: { id }, fetchPolicy: "network-only", skip: !id });
-  const { data: dayData } = useQuery(POOL_DAY_DATA_QUERY, { variables: { poolId: id, startTime: daysAgo(90) }, skip: !id });
+  const { data: dayData } = useQuery(POOL_DAY_DATA_QUERY, { variables: { poolId: id, startTime: daysAgo(90) }, skip: !id, fetchPolicy: "network-only" });
   const { data: swapsData } = useQuery(RECENT_SWAPS_QUERY, { variables: { poolId: id, first: 25 }, skip: !id });
   const { data: posData } = useQuery(LP_POSITIONS_QUERY, { variables: { poolId: id }, skip: !id });
 
