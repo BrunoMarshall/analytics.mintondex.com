@@ -55,6 +55,7 @@ const TokensPage: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ fontWeight: 700, color: "var(--accent)" }}>{formatUSD(parseFloat(token.priceUSD || "0") * shmPrice, false)}</td>
+                  <td>{formatUSD(parseFloat(token.priceUSD || "0") * shmPrice * parseFloat(token.totalSupply || "0"), true)}</td>
                   <td>{formatUSD(parseFloat(token.tradeVolume || "0") * shmPrice, true)}</td>
                   <td>{formatNumber(parseInt(token.txCount || "0"), 0)}</td>
                   <td>{formatNumber(parseInt(token.poolCount || "0"), 0)}</td>

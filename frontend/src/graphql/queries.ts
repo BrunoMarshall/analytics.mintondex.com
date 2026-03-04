@@ -67,7 +67,7 @@ export const LP_POSITIONS_QUERY = gql`
 export const TOKENS_QUERY = gql`
   query GetTokens {
     tokens(first: 50, orderBy: tradeVolume, orderDirection: desc) {
-      id symbol name decimals priceUSD tradeVolume txCount poolCount
+      id symbol name decimals priceUSD tradeVolume txCount poolCount totalSupply
     }
   }
 `;
@@ -93,7 +93,7 @@ export const TOKEN_DAY_DATA_QUERY = gql`
 export const TOKEN_DETAIL_QUERY = gql`
   query GetToken($id: ID!) {
     token(id: $id) {
-      id symbol name decimals priceUSD tradeVolume txCount poolCount
+      id symbol name decimals priceUSD tradeVolume txCount poolCount totalSupply
       pairsBase(first: 5, orderBy: volumeUSD, orderDirection: desc) {
         id token0 { id symbol } token1 { id symbol } reserve0 reserve1 volumeUSD txCount
       }

@@ -83,6 +83,7 @@ const TokenDetailPage: React.FC = () => {
         <div className="card"><div className="card-title">Price</div><div className="card-value">{formatUSD(priceUSD, false)}</div></div>
         <div className="card"><div className="card-title">TVL</div><div className="card-value">{formatUSD(tvl, true)}</div></div>
         <div className="card"><div className="card-title">Total Volume</div><div className="card-value">{formatUSD(volumeUSD, true)}</div></div>
+        <div className="card"><div className="card-title">Market Cap</div><div className="card-value">{formatUSD(priceUSD * parseFloat(token.totalSupply || "0"), true)}</div></div>
         <div className="card"><div className="card-title">Transactions</div><div className="card-value">{formatNumber(parseInt(token.txCount || "0"), 0)}</div></div>
       </div>
 

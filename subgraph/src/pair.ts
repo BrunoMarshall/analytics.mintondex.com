@@ -16,8 +16,13 @@ function getSHMPrice(): BigDecimal { return BigDecimal.fromString("1"); }
 
 function getTokenPriceUSD(tokenId: string, pair: Pair): BigDecimal {
   if (tokenId == WSHM) return getSHMPrice();
-  if (pair.token0 == WSHM) return pair.token1Price.times(getSHMPrice());
-  if (pair.token1 == WSHM) return pair.token0Price.times(getSHMPrice());
+  // token0Price = reserve0/reserve1 = token0 per token1
+  // token1Price = reserve1/reserve0 = token1 per token0
+  // If token1 is WSHM: price of token0 in WSHM = token1Price (WSHM per token0)
+  if (pair.token1 == WSHM) return pair.token1Price.times(getSHMPrice());
+  // If token0 is WSHM: price of token1 in WSHM = token0Price (token0 per token1... no, token0Price = reserve0/reserve1)
+  // token0Price = WSHM/token1 = how much WSHM per token1
+  if (pair.token0 == WSHM) return pair.token0Price.times(getSHMPrice());
   return ZERO_BD;
 }
 
