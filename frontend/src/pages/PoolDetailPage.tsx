@@ -90,12 +90,12 @@ const PoolDetailPage: React.FC = () => {
             <tbody>
               {(swapsData?.swaps ?? []).map((s: any) => (
                 <tr key={s.id}>
-                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{new Date(parseInt(s.timestamp) * 1000).toLocaleTimeString()}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{new Date(parseInt(s.timestamp) * 1000).toLocaleDateString()} {new Date(parseInt(s.timestamp) * 1000).toLocaleTimeString()}</td>
                   <td><span style={{ color: parseFloat(s.amount0In) > 0 ? "var(--accent-green)" : "var(--accent-red)", fontWeight: 700 }}>{parseFloat(s.amount0In) > 0 ? "Buy" : "Sell"}</span></td>
                   <td>{formatUSD(parseFloat(s.amountUSD) * shmPrice, false)}</td>
                   <td>{formatNumber(parseFloat(s.amount0In) + parseFloat(s.amount0Out), 4)}</td>
                   <td>{formatNumber(parseFloat(s.amount1In) + parseFloat(s.amount1Out), 4)}</td>
-                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>{s.sender?.slice(0, 8)}...</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>{s.to?.slice(0, 8)}...</td>
                 </tr>
               ))}
             </tbody>

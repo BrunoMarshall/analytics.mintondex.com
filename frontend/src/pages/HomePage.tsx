@@ -18,9 +18,7 @@ const HomePage: React.FC = () => {
   const pools = poolsData?.pairs ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
   const totalTVL = pools.reduce((sum: number, p: any) => {
-    const t0 = parseFloat(p.totalValueLockedToken0 || "0") * shmPrice;
-    const t1 = parseFloat(p.totalValueLockedToken1 || "0") * tokenPriceToUSD(p.token1Price || "0", shmPrice);
-    return sum + t0 + t1;
+    return sum + parseFloat(p.reserve1 || "0") * 2 * shmPrice;
   }, 0);
   const totalVolume = pools.reduce((s: number, p: any) => s + parseFloat(p.volumeUSD || "0") * shmPrice, 0);
   const totalTxns = pools.reduce((s: number, p: any) => s + parseInt(p.txCount || "0"), 0);
@@ -68,8 +66,8 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 32 }}>
-        <TVLChart data={dayData.map((d: any) => ({ date: String(d.date), tvlUSD: d.tvlUSD }))} loading={protocolLoading} />
-        <VolumeChart data={dayData.map((d: any) => ({ date: String(d.date), volumeUSD: d.volumeUSD }))} loading={protocolLoading} />
+        <TVLChart data={dayData.map((d: any) => ({ date: String(d.date), tvlUSD: String(parseFloat(d.tvlUSD || "0") * shmPrice) }))} loading={protocolLoading} />
+        <VolumeChart data={dayData.map((d: any) => ({ date: String(d.date), volumeUSD: String(parseFloat(d.volumeUSD || "0") * shmPrice) }))} loading={protocolLoading} />
       </div>
 
       <div>
