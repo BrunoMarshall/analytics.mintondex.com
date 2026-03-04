@@ -71,7 +71,7 @@ const PoolDetailPage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <TVLChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: ((parseFloat(d.reserve0 || "0") * parseFloat(d.token1Price || t1PerT0.toString()) + parseFloat(d.reserve1 || "0")) * shmPrice).toString() }))} loading={false} />
+        <TVLChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: (parseFloat(d.reserve1 || "0") * 2 * shmPrice).toString() }))} loading={false} />
         <VolumeChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString() }))} loading={false} />
       </div>
 

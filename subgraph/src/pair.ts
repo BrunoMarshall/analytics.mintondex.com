@@ -26,7 +26,7 @@ function getTokenPriceUSD(tokenId: string, pair: Pair): BigDecimal {
   return ZERO_BD;
 }
 
-function updatePairDayData(timestamp: BigInt, pair: Pair): PairDayData {
+function updatePairDayData(timestamp: BigInt, pair: Pair, volumeUSD: BigDecimal): PairDayData {
   let dayIndex = timestamp.toI32() / 86400;
   let id = pair.id.concat("-").concat(BigInt.fromI32(dayIndex).toString());
   let d = PairDayData.load(id);
@@ -35,7 +35,7 @@ function updatePairDayData(timestamp: BigInt, pair: Pair): PairDayData {
     d.volumeToken0 = ZERO_BD; d.volumeToken1 = ZERO_BD;
     d.volumeUSD = ZERO_BD; d.txCount = BigInt.fromI32(0);
   }
-  d.reserve0 = pair.reserve0; d.reserve1 = pair.reserve1; d.save();
+  d.reserve0 = pair.reserve0; d.reserve1 = pair.reserve1; d.volumeUSD = d.volumeUSD.plus(volumeUSD); d.save();
   return d as PairDayData;
 }
 
@@ -93,7 +93,7 @@ export function handleSync(event: SyncEvent): void {
   updateTokenDayData(t1 as Token, event.block.timestamp, ZERO_BD, tvl1);
   let pairTVL = pair.reserve1.times(BigDecimal.fromString("2"));
   updateProtocolDayData(event.block.timestamp, ZERO_BD, pairTVL);
-  updatePairDayData(event.block.timestamp, pair as Pair);
+  updatePairDayData(event.block.timestamp, pair as Pair, ZERO_BD);
 }
 
 export function handleMint(event: MintEvent): void {
@@ -159,4 +159,5 @@ export function handleSwap(event: SwapEvent): void {
   swap.amountUSD = volumeUSD; swap.logIndex = event.logIndex; swap.save();
   let swapPairTVL = pair.reserve1.times(BigDecimal.fromString("2"));
   updateProtocolDayData(event.block.timestamp, volumeUSD, swapPairTVL);
+  updatePairDayData(event.block.timestamp, pair as Pair, volumeUSD);
 }
