@@ -98,7 +98,7 @@ const TokensPage: React.FC = () => {
               <tr><td colSpan={7}><div className="loading-state"><div className="spinner" /></div></td></tr>
             ) : (
               rows.map((token: any, i: number) => (
-                <tr key={token.id} onClick={() => !token.isSHM && navigate("/tokens/" + token.id)} style={{ cursor: token.isSHM ? "default" : "pointer" }}>
+                <tr key={token.id} onClick={() => { if (token.isSHM) { window.open("https://www.coingecko.com/en/coins/shardeum", "_blank"); } else { navigate("/tokens/" + token.id); } }} style={{ cursor: "pointer" }}>
                   <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
