@@ -83,7 +83,7 @@ const HomePage: React.FC = () => {
                 <tr><td colSpan={5}><div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div></td></tr>
               ) : (
                 pools.slice(0, 5).map((pool: any, i: number) => {
-                  const poolTVL = parseFloat(pool.reserve0 || "0") * shmPrice + parseFloat(pool.reserve1 || "0") * tokenPriceToUSD(pool.token1Price || "0", shmPrice);
+                  const poolTVL = parseFloat(pool.reserve1 || "0") * 2 * shmPrice;
                   return (
                     <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id.toLowerCase())}>
                       <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
