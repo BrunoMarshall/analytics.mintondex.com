@@ -149,8 +149,8 @@ export function handleSwap(event: SwapEvent): void {
   t0.save(); t1.save(); pair.save();
   let tvl0 = pair.reserve0.times(t0.priceUSD);
   let tvl1 = pair.reserve1.times(t1.priceUSD);
-  updateTokenDayData(t0 as Token, event.block.timestamp, ZERO_BD, tvl0);
-  updateTokenDayData(t1 as Token, event.block.timestamp, ZERO_BD, tvl1);
+  updateTokenDayData(t0 as Token, event.block.timestamp, vol0.times(t0.priceUSD), tvl0);
+  updateTokenDayData(t1 as Token, event.block.timestamp, vol1.times(t1.priceUSD), tvl1);
   let swap = new Swap(event.transaction.hash.toHexString().concat("-").concat(event.logIndex.toString()));
   swap.pair = pair.id; swap.timestamp = event.block.timestamp;
   swap.sender = event.params.sender; swap.to = event.params.to;
