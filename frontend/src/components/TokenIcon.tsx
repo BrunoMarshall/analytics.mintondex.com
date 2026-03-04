@@ -4,6 +4,7 @@ const WSHM = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
 const SHM_LOGO = "/logos/shm.png";
 
 const ADDRESS_TO_LOGO: Record<string, string> = {
+  "shm-native": "/logos/shm.png",
   "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb": "/logos/wshm.png",
   "0x171e6e0ede6068d7c01bb8ec55f0dc6c6ba97f36": "/logos/0x171E6e0EdE6068d7c01bB8ec55f0dC6C6Ba97F36.png",
   "0x51a1d48cb931618ae4b4a8fb6f52894528b38823": "/logos/0x51a1d48cB931618aE4B4a8Fb6F52894528b38823.png",

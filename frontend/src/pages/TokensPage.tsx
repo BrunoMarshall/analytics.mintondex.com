@@ -102,7 +102,7 @@ const TokensPage: React.FC = () => {
                   <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <TokenIcon address={token.id} symbol={token.symbol} size={28} />
+                      <TokenIcon address={token.id} symbol={token.symbol} size={28} isSHM={token.isSHM} />
                       <div>
                         <div style={{ fontWeight: 700, fontFamily: "var(--font-heading)" }}>{token.symbol}</div>
                         <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{token.name}</div>
