@@ -152,8 +152,7 @@ this in the docs: http://dev.apollodata.com/core/fragments.html#unique-names`):o
   query GetPoolDayData($poolId: String!, $startTime: Int!) {
     pairDayDatas(first: 90, orderBy: date, orderDirection: asc,
       where: { pair: $poolId, date_gt: $startTime }) {
-      date reserve0 reserve1 token0Price token1Price
-      volumeUSD volumeToken0 volumeToken1 txCount
+      date reserve0 reserve1 volumeUSD txCount
     }
   }
 `,qL=Ut`
