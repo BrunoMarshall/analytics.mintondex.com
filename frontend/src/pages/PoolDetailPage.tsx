@@ -24,15 +24,15 @@ const PoolDetailPage: React.FC = () => {
   const t1 = pool?.token1;
   const pairDayDatas = dayData?.pairDayDatas ?? [];
 
-  // In V2: token1Price = how much token1 (WSHM) per token0 (MINT)
-  // TVL = (reserve0 * token1Price + reserve1) * shmPrice
+  const WSHM_ADDR = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
   const reserve0 = parseFloat(pool?.reserve0 || "0");
   const reserve1 = parseFloat(pool?.reserve1 || "0");
-  // token1Price = reserve1/reserve0 = WSHM per token0
-  const t1PerT0 = reserve0 > 0 ? reserve1 / reserve0 : 0; // WSHM per token0
-  const tvl = pool ? reserve1 * 2 * shmPrice : 0; // both sides equal value
-  const mintPriceUSD = t1PerT0 * shmPrice; // token0 price in USD
-  const wshmPriceUSD = shmPrice; // WSHM = SHM
+  const wshmIsToken0 = pool?.token0?.id?.toLowerCase() === WSHM_ADDR;
+  const wshmReserve = wshmIsToken0 ? reserve0 : reserve1;
+  const tvl = pool ? wshmReserve * 2 * shmPrice : 0;
+  const wshmPriceUSD = shmPrice;
+  const t1PerT0 = wshmIsToken0 ? (reserve1 > 0 ? reserve0 / reserve1 : 0) : (reserve0 > 0 ? reserve1 / reserve0 : 0);
+  const mintPriceUSD = t1PerT0 * shmPrice;
 
   if (loading) return <div className="loading-state"><div className="spinner" /></div>;
   if (error) return <div className="error-state">Query error: {error.message}</div>;
