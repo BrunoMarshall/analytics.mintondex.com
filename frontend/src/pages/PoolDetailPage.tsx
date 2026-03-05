@@ -64,8 +64,8 @@ const PoolDetailPage: React.FC = () => {
         <div className="card"><div className="card-title">TVL</div><div className="card-value">{formatUSD(tvl, false)}</div></div>
         <div className="card"><div className="card-title">Total Volume</div><div className="card-value">{formatUSD(parseFloat(pool.volumeUSD || "0") * shmPrice, false)}</div></div>
         <div className="card"><div className="card-title">Transactions</div><div className="card-value">{formatNumber(parseInt(pool.txCount || "0"), 0)}</div></div>
-        <div className="card"><div className="card-title">{t0?.symbol} Price</div><div className="card-value">{formatUSD(mintPriceUSD, false)}</div></div>
-        <div className="card"><div className="card-title">{t1?.symbol} Price</div><div className="card-value">{formatUSD(wshmPriceUSD, false)}</div></div>
+        <div className="card"><div className="card-title">{t0?.symbol} Price</div><div className="card-value">{formatUSD(wshmIsToken0 ? wshmPriceUSD : mintPriceUSD, false)}</div></div>
+        <div className="card"><div className="card-title">{t1?.symbol} Price</div><div className="card-value">{formatUSD(wshmIsToken0 ? mintPriceUSD : wshmPriceUSD, false)}</div></div>
         <div className="card"><div className="card-title">{t0?.symbol} Reserve</div><div className="card-value">{parseFloat(pool.reserve0 || "0").toLocaleString("en-US", {maximumFractionDigits: 4})}</div></div>
         <div className="card"><div className="card-title">{t1?.symbol} Reserve</div><div className="card-value">{parseFloat(pool.reserve1 || "0").toLocaleString("en-US", {maximumFractionDigits: 4})}</div></div>
       </div>
