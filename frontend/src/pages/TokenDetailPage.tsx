@@ -10,7 +10,6 @@ import TokenIcon from "../components/TokenIcon";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 const WSHM = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
-
 type Range = "24H" | "7D" | "1M" | "MAX";
 
 const TokenDetailPage: React.FC = () => {
@@ -21,49 +20,29 @@ const TokenDetailPage: React.FC = () => {
   const { data: shmHistory, loading: shmLoading } = useSHMHistory();
   const [range, setRange] = useState<Range>("1M");
 
+  // ALL hooks must be called before any early returns
   const { data, loading, error } = useQuery(TOKEN_DETAIL_QUERY, { variables: { id }, skip: !id, fetchPolicy: "network-only" });
   const { data: dayData } = useQuery(TOKEN_DAY_DATA_QUERY, { variables: { tokenId: id, startTime: daysAgo(90) }, skip: !id });
 
   const token = data?.token;
   const isWshm = id === WSHM;
   const tokenDayDatas = dayData?.tokenDayDatas ?? [];
+  const pairs = [...(token?.pairsBase ?? []), ...(token?.pairsQuote ?? [])];
+  const pairIds = pairs.map((p: any) => p.id);
 
-  if (loading) return <div className="loading-state"><div className="spinner" /></div>;
-  if (error) return <div className="error-state">Error: {error.message}</div>;
-  if (!token) return <div className="error-state">Token not found</div>;
+  const { data: pairDayDataAll } = useQuery(ALL_PAIR_DAY_DATA_FOR_TOKEN_QUERY, {
+    variables: { pairIds, startTime: daysAgo(90) },
+    skip: pairIds.length === 0
+  });
 
-  const priceUSD = isWshm ? shmPrice : parseFloat(token.priceUSD || "0") * shmPrice;
-  const volumeUSD = parseFloat(token.tradeVolume || "0") * shmPrice;
-
-  // TVL: find WSHM side of each pair and double it (AMM = equal value both sides)
-  const pairs = [...(token.pairsBase ?? []), ...(token.pairsQuote ?? [])];
+  // TVL stat card
   const tvl = pairs.reduce((sum: number, p: any) => {
     const t0isWshm = (p.token0?.id ?? "").toLowerCase() === WSHM;
     const wshmReserve = t0isWshm ? parseFloat(p.reserve0 || "0") : parseFloat(p.reserve1 || "0");
     return sum + wshmReserve * 2 * shmPrice;
   }, 0);
 
-  // Raw price history
-  const rawPriceData = isWshm
-    ? shmHistory.map((d: any) => ({ ts: parseInt(d.date), price: parseFloat(d.tvlUSD) }))
-    : tokenDayDatas.map((d: any) => ({ ts: d.date, price: parseFloat(d.priceUSD || "0") * shmPrice }));
-
-  // Filter by range
-  const now = Math.floor(Date.now() / 1000);
-  const rangeSecs: Record<Range, number> = { "24H": 86400, "7D": 7 * 86400, "1M": 30 * 86400, "MAX": 99999999 };
-  const filtered = rawPriceData.filter((d: any) => d.ts >= now - rangeSecs[range]);
-
-  const priceChartData = filtered.map((d: any) => ({
-    date: new Date(d.ts * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    value: d.price
-  }));
-
-  // TVL chart: use pairDayDatas from each pair, find WSHM reserve and double it
-  const { data: pairDayDataAll } = useQuery(ALL_PAIR_DAY_DATA_FOR_TOKEN_QUERY, {
-    variables: { pairIds: pairs.map((p: any) => p.id), startTime: daysAgo(90) },
-    skip: pairs.length === 0
-  });
-
+  // TVL chart from pairDayDatas
   const tvlChartData = React.useMemo(() => {
     const pdd = pairDayDataAll?.pairDayDatas ?? [];
     if (pdd.length === 0) return [];
@@ -79,13 +58,33 @@ const TokenDetailPage: React.FC = () => {
       .map(([date, tvl]) => ({ date, tvlUSD: String(tvl) }));
   }, [pairDayDataAll, shmPrice]);
 
+  // Price chart
+  const now = Math.floor(Date.now() / 1000);
+  const rangeSecs: Record<Range, number> = { "24H": 86400, "7D": 7 * 86400, "1M": 30 * 86400, "MAX": 99999999 };
+  const rawPriceData = isWshm
+    ? shmHistory.map((d: any) => ({ ts: parseInt(d.date), price: parseFloat(d.tvlUSD) }))
+    : tokenDayDatas.map((d: any) => ({ ts: d.date, price: parseFloat(d.priceUSD || "0") * shmPrice }));
+  const filtered = rawPriceData.filter((d: any) => d.ts >= now - rangeSecs[range]);
+  const priceChartData = filtered.map((d: any) => ({
+    date: new Date(d.ts * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    value: d.price
+  }));
+
   const volumeChartData = tokenDayDatas.map((d: any) => ({
     date: String(d.date),
     volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString()
   }));
 
-  const latest = priceChartData[priceChartData.length - 1]?.value ?? 0;
   const formatPrice = (v: number) => v < 0.000001 ? "$" + v.toExponential(2) : v < 0.01 ? "$" + v.toFixed(8) : "$" + v.toFixed(4);
+  const latest = priceChartData[priceChartData.length - 1]?.value ?? 0;
+
+  // NOW safe to do early returns (after all hooks)
+  if (loading) return <div className="loading-state"><div className="spinner" /></div>;
+  if (error) return <div className="error-state">Error: {error.message}</div>;
+  if (!token) return <div className="error-state">Token not found</div>;
+
+  const priceUSD = isWshm ? shmPrice : parseFloat(token.priceUSD || "0") * shmPrice;
+  const volumeUSD = parseFloat(token.tradeVolume || "0") * shmPrice;
 
   return (
     <div>
@@ -106,16 +105,12 @@ const TokenDetailPage: React.FC = () => {
         <div className="card"><div className="card-title">Price</div><div className="card-value">{formatUSD(priceUSD, false)}</div></div>
         <div className="card"><div className="card-title">TVL</div><div className="card-value">{formatUSD(tvl, true)}</div></div>
         <div className="card"><div className="card-title">Total Volume</div><div className="card-value">{formatUSD(volumeUSD, true)}</div></div>
-        <div className="card"><div className="card-title">Market Cap</div><div className="card-value">{formatUSD(priceUSD * parseFloat(token.totalSupply || "0"), true)}</div></div>
         <div className="card"><div className="card-title">Transactions</div><div className="card-value">{formatNumber(parseInt(token.txCount || "0"), 0)}</div></div>
       </div>
 
-      {/* Price Chart - full width with range selector */}
       <div className="chart-container" style={{ marginBottom: 16 }}>
         <div className="chart-header">
-          <div>
-            <div className="chart-title">{token.symbol} Price (USD)</div>
-          </div>
+          <div><div className="chart-title">{token.symbol} Price (USD)</div></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ color: "var(--accent-yellow)", fontWeight: 700, fontSize: 18, marginRight: 12 }}>{formatPrice(latest)}</div>
             <div className="chart-tabs">
@@ -129,7 +124,7 @@ const TokenDetailPage: React.FC = () => {
           <div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div>
         ) : priceChartData.length === 0 ? (
           <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 13 }}>
-            No price history yet — data builds up over time
+            No price history yet
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
@@ -151,10 +146,8 @@ const TokenDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* TVL + Volume side by side */}
       <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <TVLChart data={tokenDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: (parseFloat(d.priceUSD || "0") * shmPrice * parseFloat(d.txCount || "1")).toString() }))} loading={false} />
-        <TVLChart data={tvlChartData} loading={!pairDayDataAll && pairs.length > 0} />
+        <TVLChart data={tvlChartData} loading={pairIds.length > 0 && !pairDayDataAll} />
         <VolumeChart data={volumeChartData} loading={false} />
       </div>
 
@@ -172,26 +165,26 @@ const TokenDetailPage: React.FC = () => {
                   const wshmReserve = t0isWshm ? parseFloat(p.reserve0 || "0") : parseFloat(p.reserve1 || "0");
                   const pairTVL = wshmReserve * 2 * shmPrice;
                   return (
-                  <tr key={p.id} onClick={() => navigate("/pools/" + p.id)} style={{ cursor: "pointer" }}>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <TokenIcon address={p.token0?.id} symbol={p.token0?.symbol} size={20} />
-                        <TokenIcon address={p.token1?.id} symbol={p.token1?.symbol} size={20} />
-                        <span style={{ fontWeight: 700 }}>{p.token0?.symbol}/{p.token1?.symbol}</span>
-                      </div>
-                    </td>
-                    <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(pairTVL, true)}</td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                      {parseFloat(p.reserve0 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                      <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{p.token0?.symbol}</span>
-                    </td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                      {parseFloat(p.reserve1 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                      <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{p.token1?.symbol}</span>
-                    </td>
-                    <td>{formatUSD(parseFloat(p.volumeUSD || "0") * shmPrice, true)}</td>
-                    <td>{formatNumber(parseInt(p.txCount || "0"), 0)}</td>
-                  </tr>
+                    <tr key={p.id} onClick={() => navigate("/pools/" + p.id)} style={{ cursor: "pointer" }}>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <TokenIcon address={p.token0?.id} symbol={p.token0?.symbol} size={20} />
+                          <TokenIcon address={p.token1?.id} symbol={p.token1?.symbol} size={20} />
+                          <span style={{ fontWeight: 700 }}>{p.token0?.symbol}/{p.token1?.symbol}</span>
+                        </div>
+                      </td>
+                      <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(pairTVL, true)}</td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                        {parseFloat(p.reserve0 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                        <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{p.token0?.symbol}</span>
+                      </td>
+                      <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                        {parseFloat(p.reserve1 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                        <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{p.token1?.symbol}</span>
+                      </td>
+                      <td>{formatUSD(parseFloat(p.volumeUSD || "0") * shmPrice, true)}</td>
+                      <td>{formatNumber(parseInt(p.txCount || "0"), 0)}</td>
+                    </tr>
                   );
                 })}
               </tbody>
