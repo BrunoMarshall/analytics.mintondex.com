@@ -143,7 +143,20 @@ export function handleSwap(event: SwapEvent): void {
   updateProtocolDayData(event.block.timestamp, volumeUSD);
   updateTokenDayData(t0 as Token, event.block.timestamp, vol0.times(t0.priceUSD));
   updateTokenDayData(t1 as Token, event.block.timestamp, vol1.times(t1.priceUSD));
-  let pd = updatePairDayData(event as any, pair as Pair);
+  let swapDayIndex = event.block.timestamp.toI32() / 86400;
+  let swapDayId = pair.id.concat("-").concat(BigInt.fromI32(swapDayIndex).toString());
+  let pd = PairDayData.load(swapDayId);
+  if (pd === null) {
+    pd = new PairDayData(swapDayId);
+    pd.date = swapDayIndex * 86400;
+    pd.pair = pair.id;
+    pd.reserve0 = pair.reserve0;
+    pd.reserve1 = pair.reserve1;
+    pd.volumeToken0 = ZERO_BD;
+    pd.volumeToken1 = ZERO_BD;
+    pd.volumeUSD = ZERO_BD;
+    pd.txCount = BigInt.fromI32(0);
+  }
   pd.volumeUSD = pd.volumeUSD.plus(volumeUSD);
   pd.volumeToken0 = pd.volumeToken0.plus(vol0);
   pd.volumeToken1 = pd.volumeToken1.plus(vol1);
