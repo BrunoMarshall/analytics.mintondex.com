@@ -7,6 +7,7 @@ import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 import { formatSHMPrice } from "../utils/coingecko";
+import TokenIcon from "../components/TokenIcon";
 
 const WSHM = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
 
@@ -146,8 +147,8 @@ const HomePage: React.FC = () => {
                       <td>
                         <div className="token-pair">
                           <div className="token-icons">
-                            <div className="token-icon">{pool.token0.symbol.slice(0, 2)}</div>
-                            <div className="token-icon">{pool.token1.symbol.slice(0, 2)}</div>
+                            <TokenIcon address={pool.token0.id} symbol={pool.token0.symbol} size={28} />
+                            <TokenIcon address={pool.token1.id} symbol={pool.token1.symbol} size={28} />
                           </div>
                           <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">0.3%</span></span>
                         </div>
