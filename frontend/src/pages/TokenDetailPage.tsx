@@ -35,10 +35,25 @@ const TokenDetailPage: React.FC = () => {
   const priceUSD = isWshm ? shmPrice : parseFloat(token.priceUSD || "0") * shmPrice;
   const volumeUSD = parseFloat(token.tradeVolume || "0") * shmPrice;
 
-  // TVL = reserve value in USD from pairs
+  // TVL = sum both sides of each pair in USD
+  // WSHM side gives us the USD anchor: wshmReserve * 2 * shmPrice
   const pairs = [...(token.pairsBase ?? []), ...(token.pairsQuote ?? [])];
   const tvl = pairs.reduce((sum: number, p: any) => {
-    return sum + parseFloat(p.reserve1 || "0") * 2 * shmPrice;
+    const t0isWshm = (p.token0?.id ?? "").toLowerCase() === WSHM;
+    const t1isWshm = (p.token1?.id ?? "").toLowerCase() === WSHM;
+    const r0 = parseFloat(p.reserve0 || "0");
+    const r1 = parseFloat(p.reserve1 || "0");
+    const t1price = parseFloat(p.token1Price || "0"); // WSHM per token0
+    const t0price = parseFloat(p.token0Price || "0"); // token0 per WSHM
+    if (t1isWshm) {
+      // reserve1 = WSHM, convert reserve0 via token1Price
+      return sum + (r0 * t1price + r1) * shmPrice;
+    } else if (t0isWshm) {
+      // reserve0 = WSHM, convert reserve1 via token0Price
+      return sum + (r1 * t0price + r0) * shmPrice;
+    }
+    // fallback
+    return sum + r1 * 2 * shmPrice;
   }, 0);
 
   // Raw price history
