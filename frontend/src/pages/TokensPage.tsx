@@ -47,11 +47,11 @@ const TokensPage: React.FC = () => {
   const [mexcHistory, setMexcHistory] = useState<number[][]>([]);
   const [tokenStats, setTokenStats] = useState<Record<string, TokenStats>>({});
 
-  // Fetch SHM market data - price from MEXC, market cap from CoinGecko
+  // Fetch SHM market data - price/volume from MEXC, market cap from CoinGecko
   useEffect(() => {
     Promise.all([
       fetch("/api/shm-market").then(r => r.json()).catch(() => ({})),
-      fetch("/api/shm-price").then(r => r.json()).catch(() => ({}))
+      fetch("/api/shm-marketcap").then(r => r.json()).catch(() => ({}))
     ]).then(([mexc, cg]) => {
       setShmData({
         lastPrice: mexc?.lastPrice ?? "0",
