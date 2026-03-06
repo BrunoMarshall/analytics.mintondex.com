@@ -47,12 +47,18 @@ const TokensPage: React.FC = () => {
   const [mexcHistory, setMexcHistory] = useState<number[][]>([]);
   const [tokenStats, setTokenStats] = useState<Record<string, TokenStats>>({});
 
-  // Fetch SHM market data
+  // Fetch SHM market data - price from MEXC, market cap from CoinGecko
   useEffect(() => {
-    fetch("/api/shm-market")
-      .then(r => r.json())
-      .then(json => setShmData(json))
-      .catch(() => {});
+    Promise.all([
+      fetch("/api/shm-market").then(r => r.json()).catch(() => ({})),
+      fetch("/api/shm-price").then(r => r.json()).catch(() => ({}))
+    ]).then(([mexc, cg]) => {
+      setShmData({
+        lastPrice: mexc?.lastPrice ?? "0",
+        quoteVolume: mexc?.quoteVolume ?? "0",
+        marketCap: cg?.shardeum?.usd_market_cap ?? 0
+      });
+    });
   }, []);
 
   // Fetch MEXC history for SHM/WSHM stats
@@ -148,7 +154,7 @@ const TokensPage: React.FC = () => {
       symbol: "SHM",
       name: "Shardeum",
       priceUSD: parseFloat(shmData?.lastPrice ?? "0") || shmPrice,
-      marketCap: 0,
+      marketCap: shmData?.marketCap ?? 0,
       volume: parseFloat(shmData?.quoteVolume ?? "0"),
       txCount: -1,
       poolCount: -1,
