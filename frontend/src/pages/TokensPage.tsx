@@ -25,11 +25,12 @@ function PctChange({ current, prev }: { current: number; prev: number }) {
 function AthAtl({ price, extreme, label }: { price: number; extreme: number; label: string }) {
   if (!extreme || !price) return <span style={{ color: "var(--text-muted)" }}>—</span>;
   const pct = ((price - extreme) / extreme) * 100;
-  const color = label === "ATH" ? "#ef4444" : "#22c55e";
+  const isAtExtreme = Math.abs(pct) < 0.05;
+  const color = label === "ATH" ? (isAtExtreme ? "#22c55e" : "#ef4444") : "#22c55e";
   return (
     <div style={{ lineHeight: 1.4 }}>
       <div style={{ fontWeight: 600, fontSize: 12 }}>{formatUSD(extreme, false)}</div>
-      <div style={{ color, fontSize: 11 }}>{pct >= 0 ? "+" : ""}{pct.toFixed(1)}%</div>
+      <div style={{ color, fontSize: 11 }}>{label === "ATH" && isAtExtreme ? "now" : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`}</div>
     </div>
   );
 }
