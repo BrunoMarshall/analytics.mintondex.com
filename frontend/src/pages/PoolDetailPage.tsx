@@ -70,7 +70,7 @@ const PoolDetailPage: React.FC = () => {
   const t1priceUSD = t1isWshm ? shmPrice : (t0isWshm ? t0PerT1 * shmPrice : shmPrice);
 
   if (loading) return <div className="loading-state"><div className="spinner" /></div>;
-  if (!pool) return <div className="error-state">Pair not found</div>;
+  if (!pool) return <div className="error-state">Pair not found (id: {id}, loading: {String(loading)})</div>;
 
   const positions = [
     ...(posData?.mints ?? []).map((m: any) => ({ ...m, type: "Added Liquidity" })),
