@@ -26,7 +26,7 @@ function shortWallet(addr: string): string {
 }
 
 const PoolDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { poolId: id } = useParams<{ poolId: string }>();
   const navigate = useNavigate();
   const { shmPrice } = useSHMPrice();
   const [activeTab, setActiveTab] = useState<"overview" | "swaps" | "positions">("overview");
