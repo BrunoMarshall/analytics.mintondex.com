@@ -35,21 +35,12 @@ const TokenDetailPage: React.FC = () => {
   const priceUSD = isWshm ? shmPrice : parseFloat(token.priceUSD || "0") * shmPrice;
   const volumeUSD = parseFloat(token.tradeVolume || "0") * shmPrice;
 
-  // TVL: find the WSHM reserve and double it (both sides are equal value in AMM)
+  // TVL: find WSHM side of each pair and double it (AMM = equal value both sides)
   const pairs = [...(token.pairsBase ?? []), ...(token.pairsQuote ?? [])];
   const tvl = pairs.reduce((sum: number, p: any) => {
     const t0isWshm = (p.token0?.id ?? "").toLowerCase() === WSHM;
-    const t1isWshm = (p.token1?.id ?? "").toLowerCase() === WSHM;
-    const r0 = parseFloat(p.reserve0 || "0");
-    const r1 = parseFloat(p.reserve1 || "0");
-    if (t0isWshm) {
-      // reserve0 is WSHM — double it for both sides
-      return sum + r0 * 2 * shmPrice;
-    } else if (t1isWshm) {
-      // reserve1 is WSHM — double it for both sides
-      return sum + r1 * 2 * shmPrice;
-    }
-    return sum + r1 * 2 * shmPrice;
+    const wshmReserve = t0isWshm ? parseFloat(p.reserve0 || "0") : parseFloat(p.reserve1 || "0");
+    return sum + wshmReserve * 2 * shmPrice;
   }, 0);
 
   // Raw price history

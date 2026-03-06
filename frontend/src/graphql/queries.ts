@@ -94,10 +94,10 @@ export const TOKEN_DETAIL_QUERY = gql`
     token(id: $id) {
       id symbol name decimals priceUSD tradeVolume txCount poolCount totalSupply
       pairsBase(first: 5, orderBy: volumeUSD, orderDirection: desc) {
-        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 volumeUSD txCount
+        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 token0Price token1Price volumeUSD txCount
       }
       pairsQuote(first: 5, orderBy: volumeUSD, orderDirection: desc) {
-        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 volumeUSD txCount
+        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 token0Price token1Price volumeUSD txCount
       }
     }
   }
