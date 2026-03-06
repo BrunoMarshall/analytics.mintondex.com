@@ -6,8 +6,7 @@ import StatCard from "../components/StatCard";
 import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
-import { tokenPriceToUSD, formatSHMPrice } from "../utils/coingecko";
-import TokenIcon from "../components/TokenIcon";
+import { formatSHMPrice } from "../utils/coingecko";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,26 +15,46 @@ const HomePage: React.FC = () => {
   const { data: poolsData, loading: poolsLoading } = useQuery(POOLS_QUERY, { variables: { first: 100, skip: 0 } });
   const { data: protocolData, loading: protocolLoading } = useQuery(PROTOCOL_DAY_DATA_QUERY, { variables: { startTime } });
   const { data: allPairsDayData } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
-  const pools = poolsData?.pairs ?? [];
+
+  const pools = poolsData?.pairs ?? poolsData?.pools ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
+
   const totalTVL = pools.reduce((sum: number, p: any) => {
-    return sum + parseFloat(p.reserve1 || "0") * 2 * shmPrice;
+    return sum + (parseFloat(p.reserve0 || "0") + parseFloat(p.reserve1 || "0")) * shmPrice;
   }, 0);
   const totalVolume = pools.reduce((s: number, p: any) => s + parseFloat(p.volumeUSD || "0") * shmPrice, 0);
   const totalTxns = pools.reduce((s: number, p: any) => s + parseInt(p.txCount || "0"), 0);
   const tokenSet = new Set<string>();
   pools.forEach((p: any) => { tokenSet.add(p.token0.id); tokenSet.add(p.token1.id); });
 
+  // Build TVL chart by summing reserves across all pairs per day
+  const tvlChartData = React.useMemo(() => {
+    const byDate: Record<string, number> = {};
+    (allPairsDayData?.pairDayDatas ?? []).forEach((d: any) => {
+      const key = String(d.date);
+      const tvl = (parseFloat(d.reserve0 || "0") + parseFloat(d.reserve1 || "0")) * shmPrice;
+      byDate[key] = (byDate[key] ?? 0) + tvl;
+    });
+    return Object.entries(byDate)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([date, tvl]) => ({ date, tvlUSD: String(tvl) }));
+  }, [allPairsDayData, shmPrice]);
+
+  const volumeChartData = dayData.map((d: any) => ({
+    date: String(d.date),
+    volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString()
+  }));
+
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">MintonDex Analytics</h1>
-        <p className="page-subtitle">Real-time on-chain analytics for MintonDex on Shardeum</p>
+        <h1 className="page-title">Mintondex Analytics</h1>
+        <p className="page-subtitle">Real-time on-chain analytics for Mintondex on Shardeum</p>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", background: "linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%)", border: "2px solid var(--border-light)", borderRadius: "var(--radius)", padding: "16px 24px", marginBottom: 28, boxShadow: "var(--shadow)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <TokenIcon isSHM={true} size={42} symbol="SHM" />
+          <div className="token-icon" style={{ width: 42, height: 42, fontSize: 13 }}>SH</div>
           <div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>SHM Price</div>
             <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "var(--font-heading)", background: "var(--accent-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -67,8 +86,8 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 32 }}>
-        <TVLChart data={dayData.map((d: any) => ({ date: String(d.date), tvlUSD: String(parseFloat(d.tvlUSD || "0") * shmPrice) }))} loading={protocolLoading} />
-        <VolumeChart data={dayData.map((d: any) => ({ date: String(d.date), volumeUSD: String(parseFloat(d.volumeUSD || "0") * shmPrice) }))} loading={protocolLoading} />
+        <TVLChart data={tvlChartData} loading={poolsLoading || !allPairsDayData} />
+        <VolumeChart data={volumeChartData} loading={protocolLoading} />
       </div>
 
       <div>
@@ -84,17 +103,17 @@ const HomePage: React.FC = () => {
                 <tr><td colSpan={5}><div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div></td></tr>
               ) : (
                 pools.slice(0, 5).map((pool: any, i: number) => {
-                  const poolTVL = parseFloat(pool.reserve1 || "0") * 2 * shmPrice;
+                  const poolTVL = (parseFloat(pool.reserve0 || "0") + parseFloat(pool.reserve1 || "0")) * shmPrice;
                   return (
-                    <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id.toLowerCase())}>
+                    <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)} style={{ cursor: "pointer" }}>
                       <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                       <td>
                         <div className="token-pair">
                           <div className="token-icons">
-                            <TokenIcon address={pool.token0.id} symbol={pool.token0.symbol} size={28} />
-                            <TokenIcon address={pool.token1.id} symbol={pool.token1.symbol} size={28} />
+                            <div className="token-icon">{pool.token0.symbol.slice(0, 2)}</div>
+                            <div className="token-icon">{pool.token1.symbol.slice(0, 2)}</div>
                           </div>
-                          <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">{(parseInt("3000") / 10000).toFixed(2)}%</span></span>
+                          <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">0.3%</span></span>
                         </div>
                       </td>
                       <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(poolTVL, true)}</td>

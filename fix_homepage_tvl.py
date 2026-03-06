@@ -1,6 +1,6 @@
 import io
 
-# ── 1. queries.ts – add ALL_PAIRS_DAY_DATA_QUERY ─────────────────────────────
+# Fix queries.ts - add ALL_PAIRS_DAY_DATA_QUERY
 qt = io.open("C:/mintondex/frontend/src/graphql/queries.ts", encoding="utf-8").read()
 if "ALL_PAIRS_DAY_DATA_QUERY" not in qt:
     qt += """
@@ -18,7 +18,7 @@ export const ALL_PAIRS_DAY_DATA_QUERY = gql`
 else:
     print("queries.ts already has ALL_PAIRS_DAY_DATA_QUERY")
 
-# ── 2. HomePage.tsx – full rewrite ────────────────────────────────────────────
+# Full rewrite of HomePage.tsx with working TVL chart
 content = """import React from "react";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
@@ -155,4 +155,4 @@ export default HomePage;
 """
 
 io.open("C:/mintondex/frontend/src/pages/HomePage.tsx", "w", encoding="utf-8").write(content)
-print("saved HomePage.tsx — TVL chart now uses pairDayDatas reserves")
+print("saved HomePage.tsx - TVL chart now uses pairDayDatas reserves!")
