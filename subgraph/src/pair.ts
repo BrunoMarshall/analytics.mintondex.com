@@ -21,7 +21,7 @@ function getTokenPriceUSD(tokenId: string, pair: Pair): BigDecimal {
   return ZERO_BD;
 }
 
-function updatePairDayData(event: SyncEvent, pair: Pair): void {
+function updatePairDayData(event: SyncEvent, pair: Pair): PairDayData {
   let dayIndex = event.block.timestamp.toI32() / 86400;
   let id = pair.id.concat("-").concat(BigInt.fromI32(dayIndex).toString());
   let d = PairDayData.load(id);
@@ -31,6 +31,7 @@ function updatePairDayData(event: SyncEvent, pair: Pair): void {
     d.volumeUSD = ZERO_BD; d.txCount = BigInt.fromI32(0);
   }
   d.reserve0 = pair.reserve0; d.reserve1 = pair.reserve1; d.save();
+  return d as PairDayData;
 }
 
 function updateTokenDayData(token: Token, timestamp: BigInt, volumeUSD: BigDecimal): void {
@@ -142,4 +143,10 @@ export function handleSwap(event: SwapEvent): void {
   updateProtocolDayData(event.block.timestamp, volumeUSD);
   updateTokenDayData(t0 as Token, event.block.timestamp, vol0.times(t0.priceUSD));
   updateTokenDayData(t1 as Token, event.block.timestamp, vol1.times(t1.priceUSD));
+  let pd = updatePairDayData(event as any, pair as Pair);
+  pd.volumeUSD = pd.volumeUSD.plus(volumeUSD);
+  pd.volumeToken0 = pd.volumeToken0.plus(vol0);
+  pd.volumeToken1 = pd.volumeToken1.plus(vol1);
+  pd.txCount = pd.txCount.plus(BigInt.fromI32(1));
+  pd.save();
 }
