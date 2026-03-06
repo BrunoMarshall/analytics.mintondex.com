@@ -30,7 +30,7 @@ function AthAtl({ price, extreme, label }: { price: number; extreme: number; lab
   return (
     <div style={{ lineHeight: 1.4 }}>
       <div style={{ fontWeight: 600, fontSize: 12 }}>{formatUSD(extreme, false)}</div>
-      <div style={{ color, fontSize: 11 }}>{label === "ATH" && isAtExtreme ? "now" : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`}</div>
+      <div style={{ color, fontSize: 11 }}>{label === "ATH" && isAtExtreme ? <span style={{ animation: "blink 1.2s ease-in-out infinite", color: "#22c55e", fontWeight: 800 }}>now</span> : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`}</div>
     </div>
   );
 }
@@ -133,6 +133,7 @@ const TokensPage: React.FC = () => {
 
   return (
     <div>
+      <style>{`@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }`}</style>
       <div className="page-header">
         <h1 className="page-title">Tokens</h1>
         <p className="page-subtitle">All tokens indexed on MintonDex</p>
