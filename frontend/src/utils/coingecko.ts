@@ -1,5 +1,3 @@
-const MEXC_URL = "https://api.mexc.com/api/v3/ticker/24hr?symbol=SHMUSDT";
-
 let cachedPrice: number = 0.00008806;
 let lastFetched: number = 0;
 const CACHE_TTL = 60 * 1000;
@@ -8,7 +6,7 @@ export async function getSHMPriceUSD(): Promise<number> {
   const now = Date.now();
   if (now - lastFetched < CACHE_TTL && cachedPrice > 0) return cachedPrice;
   try {
-    const res = await fetch(MEXC_URL);
+    const res = await fetch("/api/shm-price");
     const data = await res.json();
     const price = parseFloat(data?.lastPrice ?? "0");
     if (price > 0) { cachedPrice = price; lastFetched = now; }
@@ -18,7 +16,7 @@ export async function getSHMPriceUSD(): Promise<number> {
 
 export async function getSHMMarketData(): Promise<{price:number;marketCap:number;volume24h:number}> {
   try {
-    const res = await fetch(MEXC_URL);
+    const res = await fetch("/api/shm-market");
     const data = await res.json();
     const price = parseFloat(data?.lastPrice ?? "0");
     const volume24h = parseFloat(data?.quoteVolume ?? "0");
