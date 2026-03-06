@@ -1,5 +1,4 @@
-const API_KEY = "CG-N63QyXNQgXZYsjEPe3U4NTsX";
-const BASE = "https://api.coingecko.com/api/v3";
+const MEXC_URL = "https://api.mexc.com/api/v3/ticker/24hr?symbol=SHMUSDT";
 
 let cachedPrice: number = 0.00008806;
 let lastFetched: number = 0;
@@ -9,20 +8,22 @@ export async function getSHMPriceUSD(): Promise<number> {
   const now = Date.now();
   if (now - lastFetched < CACHE_TTL && cachedPrice > 0) return cachedPrice;
   try {
-    const res = await fetch(`${BASE}/simple/price?ids=shardeum&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`);
+    const res = await fetch(MEXC_URL);
     const data = await res.json();
-    cachedPrice = data?.shardeum?.usd ?? cachedPrice;
-    lastFetched = now;
+    const price = parseFloat(data?.lastPrice ?? "0");
+    if (price > 0) { cachedPrice = price; lastFetched = now; }
     return cachedPrice;
   } catch { return cachedPrice; }
 }
 
 export async function getSHMMarketData(): Promise<{price:number;marketCap:number;volume24h:number}> {
   try {
-    const res = await fetch(`${BASE}/simple/price?ids=shardeum&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&x_cg_demo_api_key=${API_KEY}`);
+    const res = await fetch(MEXC_URL);
     const data = await res.json();
-    const d = data?.shardeum;
-    return { price: d?.usd ?? cachedPrice, marketCap: d?.usd_market_cap ?? 0, volume24h: d?.usd_24h_vol ?? 0 };
+    const price = parseFloat(data?.lastPrice ?? "0");
+    const volume24h = parseFloat(data?.quoteVolume ?? "0");
+    if (price > 0) cachedPrice = price;
+    return { price: cachedPrice, marketCap: 0, volume24h };
   } catch { return { price: cachedPrice, marketCap: 0, volume24h: 0 }; }
 }
 

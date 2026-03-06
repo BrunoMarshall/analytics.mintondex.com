@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API_KEY = "CG-N63QyXNQgXZYsjEPe3U4NTsX";
-const HISTORY_URL = `https://api.coingecko.com/api/v3/coins/shardeum/market_chart?vs_currency=usd&days=90&interval=daily&x_cg_demo_api_key=${API_KEY}`;
+const MEXC_KLINES = "https://api.mexc.com/api/v3/klines?symbol=SHMUSDT&interval=1d&limit=1000";
 
 export interface PricePoint { date: string; tvlUSD: string; }
 
@@ -9,12 +8,13 @@ export function useSHMHistory(): { data: PricePoint[]; loading: boolean } {
   const [data, setData] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    fetch(HISTORY_URL)
+    fetch(MEXC_KLINES)
       .then(r => r.json())
       .then(json => {
-        const points: PricePoint[] = (json.prices ?? []).map((p: number[]) => ({
-          date: String(Math.floor(p[0] / 1000)),
-          tvlUSD: String(p[1])
+        // MEXC klines format: [openTime, open, high, low, close, volume, ...]
+        const points: PricePoint[] = (json ?? []).map((k: any[]) => ({
+          date: String(Math.floor(k[0] / 1000)),
+          tvlUSD: String(parseFloat(k[4])) // close price
         }));
         setData(points);
       })
