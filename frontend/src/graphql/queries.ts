@@ -92,16 +92,21 @@ export const TOKEN_DAY_DATA_QUERY = gql`
 export const TOKEN_DETAIL_QUERY = gql`
   query GetToken($id: ID!) {
     token(id: $id) {
-      id symbol name decimals priceUSD tradeVolume txCount poolCount totalSupply
-      pairsBase(first: 5, orderBy: volumeUSD, orderDirection: desc) {
-        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 token0Price token1Price volumeUSD txCount
+      id symbol name decimals totalSupply
+      priceUSD tradeVolume txCount poolCount
+      pairsBase(first: 10, orderBy: volumeUSD, orderDirection: desc) {
+        id reserve0 reserve1 token0Price token1Price volumeUSD txCount
+        token0 { id symbol }
+        token1 { id symbol }
       }
-      pairsQuote(first: 5, orderBy: volumeUSD, orderDirection: desc) {
-        id token0 { id symbol } token1 { id symbol } reserve0 reserve1 token0Price token1Price volumeUSD txCount
+      pairsQuote(first: 10, orderBy: volumeUSD, orderDirection: desc) {
+        id reserve0 reserve1 token0Price token1Price volumeUSD txCount
+        token0 { id symbol }
+        token1 { id symbol }
       }
     }
   }
-`;
+\`;
 
 export const ALL_PAIRS_DAY_DATA_QUERY = gql`
   query GetAllPairsDayData($startTime: Int!) {

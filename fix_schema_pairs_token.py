@@ -1,4 +1,162 @@
-import React, { useState } from "react";
+import io
+
+# ============================================================
+# 1. Fix schema - add pairsBase/pairsQuote derived fields on Token
+# ============================================================
+schema = """type Pair @entity(immutable: false) {
+  id: ID!
+  token0: Token!
+  token1: Token!
+  reserve0: BigDecimal!
+  reserve1: BigDecimal!
+  totalSupply: BigDecimal!
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+  volumeToken0: BigDecimal!
+  volumeToken1: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
+  createdAtTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+  pairDayData: [PairDayData!]! @derivedFrom(field: "pair")
+  mints: [Mint!]! @derivedFrom(field: "pair")
+  burns: [Burn!]! @derivedFrom(field: "pair")
+  swaps: [Swap!]! @derivedFrom(field: "pair")
+}
+
+type Token @entity(immutable: false) {
+  id: ID!
+  symbol: String!
+  name: String!
+  decimals: BigInt!
+  totalSupply: BigDecimal!
+  tradeVolume: BigDecimal!
+  txCount: BigInt!
+  poolCount: BigInt!
+  priceUSD: BigDecimal!
+  tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
+  pairsBase: [Pair!]! @derivedFrom(field: "token0")
+  pairsQuote: [Pair!]! @derivedFrom(field: "token1")
+}
+
+type MintondexDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  volumeUSD: BigDecimal!
+  tvlUSD: BigDecimal!
+  txCount: BigInt!
+}
+
+type PairDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  pair: Pair!
+  reserve0: BigDecimal!
+  reserve1: BigDecimal!
+  volumeToken0: BigDecimal!
+  volumeToken1: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
+}
+
+type TokenDayData @entity(immutable: false) {
+  id: ID!
+  date: Int!
+  token: Token!
+  priceUSD: BigDecimal!
+  volumeUSD: BigDecimal!
+  txCount: BigInt!
+}
+
+type Mint @entity(immutable: true) {
+  id: ID!
+  pair: Pair!
+  timestamp: BigInt!
+  sender: Bytes!
+  amount0: BigDecimal!
+  amount1: BigDecimal!
+  amountUSD: BigDecimal!
+  logIndex: BigInt
+}
+
+type Burn @entity(immutable: true) {
+  id: ID!
+  pair: Pair!
+  timestamp: BigInt!
+  sender: Bytes!
+  amount0: BigDecimal!
+  amount1: BigDecimal!
+  amountUSD: BigDecimal!
+  logIndex: BigInt
+}
+
+type Swap @entity(immutable: true) {
+  id: ID!
+  pair: Pair!
+  timestamp: BigInt!
+  sender: Bytes!
+  amount0In: BigDecimal!
+  amount1In: BigDecimal!
+  amount0Out: BigDecimal!
+  amount1Out: BigDecimal!
+  amountUSD: BigDecimal!
+  to: Bytes!
+  logIndex: BigInt
+}
+"""
+with io.open("C:/mintondex/subgraph/schema.graphql", "w", encoding="utf-8") as f:
+    f.write(schema)
+print("saved schema.graphql with pairsBase/pairsQuote")
+
+# ============================================================
+# 2. Fix TOKEN_DETAIL_QUERY in queries.ts to include pairs
+# ============================================================
+queries = io.open("C:/mintondex/frontend/src/graphql/queries.ts", encoding="utf-8").read()
+
+# Replace or add TOKEN_DETAIL_QUERY
+token_detail_query = '''
+export const TOKEN_DETAIL_QUERY = gql`
+  query GetToken($id: ID!) {
+    token(id: $id) {
+      id symbol name decimals totalSupply
+      priceUSD tradeVolume txCount poolCount
+      pairsBase(first: 10, orderBy: volumeUSD, orderDirection: desc) {
+        id reserve0 reserve1 token0Price token1Price volumeUSD txCount
+        token0 { id symbol }
+        token1 { id symbol }
+      }
+      pairsQuote(first: 10, orderBy: volumeUSD, orderDirection: desc) {
+        id reserve0 reserve1 token0Price token1Price volumeUSD txCount
+        token0 { id symbol }
+        token1 { id symbol }
+      }
+    }
+  }
+\`;
+'''
+
+if 'TOKEN_DETAIL_QUERY' in queries:
+    # Remove old one and replace
+    import re
+    queries = re.sub(
+        r'export const TOKEN_DETAIL_QUERY = gql`[\s\S]*?`;',
+        token_detail_query.strip(),
+        queries
+    )
+else:
+    queries += token_detail_query
+
+with io.open("C:/mintondex/frontend/src/graphql/queries.ts", "w", encoding="utf-8") as f:
+    f.write(queries)
+print("updated TOKEN_DETAIL_QUERY in queries.ts")
+
+# ============================================================
+# 3. Fix TokenDetailPage - correct price calculation
+# The prices shown before were correct: token0Price * shmPrice
+# WSHM is token1 in most pairs, so token1Price = WSHM per token
+# priceUSD = token1Price * shmPrice (how many WSHM per token * USD per WSHM)
+# ============================================================
+token_detail = """import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { TOKEN_DETAIL_QUERY } from "../graphql/queries";
@@ -178,3 +336,15 @@ const TokenDetailPage: React.FC = () => {
 };
 
 export default TokenDetailPage;
+"""
+with io.open("C:/mintondex/frontend/src/pages/TokenDetailPage.tsx", "w", encoding="utf-8") as f:
+    f.write(token_detail)
+print("saved TokenDetailPage.tsx")
+
+print("\nNow redeploy subgraph (schema changed):")
+print("cd C:/mintondex/subgraph && npm run codegen && npm run build && graph deploy --node http://144.91.89.44:8020 --ipfs http://144.91.89.44:5001 mintondex-v2")
+print("Use v0.0.16")
+print()
+print("Then push frontend:")
+print("cd C:/mintondex && git add . && git commit -m 'fix: add pairsBase/pairsQuote to schema, fix token prices' && git push")
+print("VPS: cd /var/www/analytics-src && git pull && cd frontend && npm run build && cp -r dist/* /var/www/analytics.mintondex.com/")

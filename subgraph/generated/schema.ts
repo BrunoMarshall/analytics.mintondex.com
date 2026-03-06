@@ -390,6 +390,14 @@ export class Token extends Entity {
       "tokenDayData"
     );
   }
+
+  get pairsBase(): PairLoader {
+    return new PairLoader("Token", this.get("id")!.toString(), "pairsBase");
+  }
+
+  get pairsQuote(): PairLoader {
+    return new PairLoader("Token", this.get("id")!.toString(), "pairsQuote");
+  }
 }
 
 export class MintondexDayData extends Entity {
@@ -1272,5 +1280,23 @@ export class TokenDayDataLoader extends Entity {
   load(): TokenDayData[] {
     let value = store.loadRelated(this._entity, this._id, this._field);
     return changetype<TokenDayData[]>(value);
+  }
+}
+
+export class PairLoader extends Entity {
+  _entity: string;
+  _field: string;
+  _id: string;
+
+  constructor(entity: string, id: string, field: string) {
+    super();
+    this._entity = entity;
+    this._id = id;
+    this._field = field;
+  }
+
+  load(): Pair[] {
+    let value = store.loadRelated(this._entity, this._id, this._field);
+    return changetype<Pair[]>(value);
   }
 }

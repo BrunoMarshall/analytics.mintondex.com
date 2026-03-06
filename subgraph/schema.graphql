@@ -30,6 +30,8 @@ type Token @entity(immutable: false) {
   poolCount: BigInt!
   priceUSD: BigDecimal!
   tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
+  pairsBase: [Pair!]! @derivedFrom(field: "token0")
+  pairsQuote: [Pair!]! @derivedFrom(field: "token1")
 }
 
 type MintondexDayData @entity(immutable: false) {
