@@ -34,10 +34,6 @@ export class Mint__Params {
   get amount1(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
-
-  get to(): Address {
-    return this._event.parameters[3].value.toAddress();
-  }
 }
 
 export class Burn extends ethereum.Event {
@@ -130,38 +126,6 @@ export class Sync__Params {
   }
 }
 
-export class Pair__getReservesResult {
-  value0: BigInt;
-  value1: BigInt;
-  value2: BigInt;
-
-  constructor(value0: BigInt, value1: BigInt, value2: BigInt) {
-    this.value0 = value0;
-    this.value1 = value1;
-    this.value2 = value2;
-  }
-
-  toMap(): TypedMap<string, ethereum.Value> {
-    let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
-    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
-    return map;
-  }
-
-  getReserve0(): BigInt {
-    return this.value0;
-  }
-
-  getReserve1(): BigInt {
-    return this.value1;
-  }
-
-  getBlockTimestampLast(): BigInt {
-    return this.value2;
-  }
-}
-
 export class Pair extends ethereum.SmartContract {
   static bind(address: Address): Pair {
     return new Pair("Pair", address);
@@ -195,39 +159,6 @@ export class Pair extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  getReserves(): Pair__getReservesResult {
-    let result = super.call(
-      "getReserves",
-      "getReserves():(uint112,uint112,uint32)",
-      []
-    );
-
-    return new Pair__getReservesResult(
-      result[0].toBigInt(),
-      result[1].toBigInt(),
-      result[2].toBigInt()
-    );
-  }
-
-  try_getReserves(): ethereum.CallResult<Pair__getReservesResult> {
-    let result = super.tryCall(
-      "getReserves",
-      "getReserves():(uint112,uint112,uint32)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(
-      new Pair__getReservesResult(
-        value[0].toBigInt(),
-        value[1].toBigInt(),
-        value[2].toBigInt()
-      )
-    );
   }
 
   totalSupply(): BigInt {

@@ -71,7 +71,12 @@ const PoolDetailPage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 24 }}>
-        <TVLChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: (parseFloat(d.reserve1 || "0") * 2 * shmPrice).toString() }))} loading={false} />
+        <TVLChart data={pairDayDatas.map((d: any) => {
+          const WSHM_A = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
+          const t0isW = (t0?.id ?? "").toLowerCase() === WSHM_A;
+          const wr = t0isW ? parseFloat(d.reserve0 || "0") : parseFloat(d.reserve1 || "0");
+          return { date: String(d.date), tvlUSD: String(wr * 2 * shmPrice) };
+        })} loading={false} />
         <VolumeChart data={pairDayDatas.map((d: any) => ({ date: String(d.date), volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString() }))} loading={false} />
       </div>
 
