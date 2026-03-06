@@ -90,7 +90,7 @@ const TokenDetailPage: React.FC = () => {
   // Volume chart from tokenDayDatas
   const volumeChartData = tokenDayDatas.map((d: any) => ({
     date: String(d.date),
-    volumeUSD: (parseFloat(d.volumeUSD || "0") > 0 ? (1 / parseFloat(d.volumeUSD || "0")) * shmPrice : 0).toString()
+    volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString()
   }));
 
   // TVL chart: build from tokenDayDatas price * a fixed supply proxy
