@@ -106,7 +106,7 @@ export const TOKEN_DETAIL_QUERY = gql`
       }
     }
   }
-\`;
+`;
 
 export const ALL_PAIRS_DAY_DATA_QUERY = gql`
   query GetAllPairsDayData($startTime: Int!) {
