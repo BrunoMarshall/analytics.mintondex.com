@@ -1,9 +1,28 @@
 import io
 
+# ── 1. queries.ts – add ALL_PAIRS_DAY_DATA_QUERY ─────────────────────────────
+qt = io.open("C:/mintondex/frontend/src/graphql/queries.ts", encoding="utf-8").read()
+if "ALL_PAIRS_DAY_DATA_QUERY" not in qt:
+    qt += """
+export const ALL_PAIRS_DAY_DATA_QUERY = gql`
+  query GetAllPairsDayData($startTime: Int!) {
+    pairDayDatas(first: 1000, orderBy: date, orderDirection: asc,
+      where: { date_gt: $startTime }) {
+      date reserve0 reserve1
+    }
+  }
+`;
+"""
+    io.open("C:/mintondex/frontend/src/graphql/queries.ts", "w", encoding="utf-8").write(qt)
+    print("queries.ts updated")
+else:
+    print("queries.ts already has ALL_PAIRS_DAY_DATA_QUERY")
+
+# ── 2. HomePage.tsx – full rewrite ────────────────────────────────────────────
 content = """import React from "react";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { POOLS_QUERY, PROTOCOL_DAY_DATA_QUERY } from "../graphql/queries";
+import { POOLS_QUERY, PROTOCOL_DAY_DATA_QUERY, ALL_PAIRS_DAY_DATA_QUERY } from "../graphql/queries";
 import StatCard from "../components/StatCard";
 import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
@@ -16,17 +35,37 @@ const HomePage: React.FC = () => {
   const { shmPrice } = useSHMPrice();
   const { data: poolsData, loading: poolsLoading } = useQuery(POOLS_QUERY, { variables: { first: 100, skip: 0 } });
   const { data: protocolData, loading: protocolLoading } = useQuery(PROTOCOL_DAY_DATA_QUERY, { variables: { startTime } });
-  const pools = poolsData?.pools ?? [];
+  const { data: allPairsDayData } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
+
+  const pools = poolsData?.pools ?? poolsData?.pairs ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
+
   const totalTVL = pools.reduce((sum: number, p: any) => {
-    const t0 = parseFloat(p.totalValueLockedToken0 || "0") * shmPrice;
-    const t1 = parseFloat(p.totalValueLockedToken1 || "0") * tokenPriceToUSD(p.token1Price || "0", shmPrice);
-    return sum + t0 + t1;
+    return sum + (parseFloat(p.reserve0 || "0") + parseFloat(p.reserve1 || "0")) * shmPrice;
   }, 0);
   const totalVolume = pools.reduce((s: number, p: any) => s + parseFloat(p.volumeUSD || "0") * shmPrice, 0);
   const totalTxns = pools.reduce((s: number, p: any) => s + parseInt(p.txCount || "0"), 0);
   const tokenSet = new Set<string>();
   pools.forEach((p: any) => { tokenSet.add(p.token0.id); tokenSet.add(p.token1.id); });
+
+  // Build TVL chart from pairDayDatas (sum reserves per day * shmPrice)
+  const tvlChartData = React.useMemo(() => {
+    const byDate: Record<string, number> = {};
+    (allPairsDayData?.pairDayDatas ?? []).forEach((d: any) => {
+      const key = String(d.date);
+      const tvl = (parseFloat(d.reserve0 || "0") + parseFloat(d.reserve1 || "0")) * shmPrice;
+      byDate[key] = (byDate[key] ?? 0) + tvl;
+    });
+    return Object.entries(byDate)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([date, tvl]) => ({ date, tvlUSD: String(tvl) }));
+  }, [allPairsDayData, shmPrice]);
+
+  // Volume chart from protocol day data
+  const volumeChartData = dayData.map((d: any) => ({
+    date: String(d.date),
+    volumeUSD: (parseFloat(d.volumeUSD || "0") * shmPrice).toString()
+  }));
 
   return (
     <div>
@@ -45,7 +84,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>Live via CoinGecko - refreshes every 60s</div>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>Live via MEXC - refreshes every 60s</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[
             { label: "WSHM", addr: "0x7365...fbeb" }, { label: "MRSH", addr: "0xe223...31f1" },
@@ -69,8 +108,8 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 32 }}>
-        <TVLChart data={dayData.map((d: any) => ({ date: String(d.date), tvlUSD: d.tvlUSD }))} loading={protocolLoading} />
-        <VolumeChart data={dayData.map((d: any) => ({ date: String(d.date), volumeUSD: d.volumeUSD }))} loading={protocolLoading} />
+        <TVLChart data={tvlChartData} loading={poolsLoading || !allPairsDayData} />
+        <VolumeChart data={volumeChartData} loading={protocolLoading} />
       </div>
 
       <div>
@@ -86,9 +125,9 @@ const HomePage: React.FC = () => {
                 <tr><td colSpan={5}><div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div></td></tr>
               ) : (
                 pools.slice(0, 5).map((pool: any, i: number) => {
-                  const poolTVL = parseFloat(pool.totalValueLockedToken0 || "0") * shmPrice + parseFloat(pool.totalValueLockedToken1 || "0") * tokenPriceToUSD(pool.token1Price || "0", shmPrice);
+                  const poolTVL = (parseFloat(pool.reserve0 || "0") + parseFloat(pool.reserve1 || "0")) * shmPrice;
                   return (
-                    <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)}>
+                    <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)} style={{ cursor: "pointer" }}>
                       <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                       <td>
                         <div className="token-pair">
@@ -96,7 +135,7 @@ const HomePage: React.FC = () => {
                             <div className="token-icon">{pool.token0.symbol.slice(0, 2)}</div>
                             <div className="token-icon">{pool.token1.symbol.slice(0, 2)}</div>
                           </div>
-                          <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">{(parseInt(pool.feeTier) / 10000).toFixed(2)}%</span></span>
+                          <span className="token-pair-name">{pool.token0.symbol}/{pool.token1.symbol}<span className="fee-badge">0.3%</span></span>
                         </div>
                       </td>
                       <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(poolTVL, true)}</td>
@@ -116,6 +155,5 @@ const HomePage: React.FC = () => {
 export default HomePage;
 """
 
-with io.open("C:/mintondex/frontend/src/pages/HomePage.tsx", "w", encoding="utf-8") as f:
-    f.write(content)
-print("saved! length:", len(content))
+io.open("C:/mintondex/frontend/src/pages/HomePage.tsx", "w", encoding="utf-8").write(content)
+print("saved HomePage.tsx — TVL chart now uses pairDayDatas")
