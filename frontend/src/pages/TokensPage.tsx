@@ -59,9 +59,11 @@ const TokensPage: React.FC = () => {
 
   useEffect(() => {
     if (!data?.tokens || !shmPrice) return;
+    let cancelled = false;
     const fetchAll = async () => {
       const stats: Record<string, TokenStats> = {};
       for (const token of data.tokens) {
+        if (cancelled) return;
         try {
           const res = await fetch(SUBGRAPH, {
             method: "POST",
@@ -83,9 +85,10 @@ const TokensPage: React.FC = () => {
           };
         } catch {}
       }
-      setTokenStats(stats);
+      if (!cancelled) setTokenStats(stats);
     };
     fetchAll();
+    return () => { cancelled = true; };
   }, [data, shmPrice]);
 
   const shmStats: TokenStats | null = React.useMemo(() => {
