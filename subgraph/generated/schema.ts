@@ -589,6 +589,32 @@ export class PairDayData extends Entity {
     this.set("reserve1", Value.fromBigDecimal(value));
   }
 
+  get token0Price(): BigDecimal {
+    let value = this.get("token0Price");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set token0Price(value: BigDecimal) {
+    this.set("token0Price", Value.fromBigDecimal(value));
+  }
+
+  get token1Price(): BigDecimal {
+    let value = this.get("token1Price");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set token1Price(value: BigDecimal) {
+    this.set("token1Price", Value.fromBigDecimal(value));
+  }
+
   get volumeToken0(): BigDecimal {
     let value = this.get("volumeToken0");
     if (!value || value.kind == ValueKind.NULL) {

@@ -115,7 +115,9 @@ export const ALL_PAIRS_DAY_DATA_QUERY = gql`
       date
       reserve0
       reserve1
-      pair { token0 { id } token1 { id } token0Price token1Price }
+      token0Price
+      token1Price
+      pair { token0 { id } token1 { id } }
     }
   }
 `;

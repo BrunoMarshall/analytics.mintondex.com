@@ -29,8 +29,9 @@ function updatePairDayData(event: SyncEvent, pair: Pair): PairDayData {
     d = new PairDayData(id); d.date = dayIndex * 86400; d.pair = pair.id;
     d.volumeToken0 = ZERO_BD; d.volumeToken1 = ZERO_BD;
     d.volumeUSD = ZERO_BD; d.txCount = BigInt.fromI32(0);
+    d.token0Price = ZERO_BD; d.token1Price = ZERO_BD;
   }
-  d.reserve0 = pair.reserve0; d.reserve1 = pair.reserve1; d.save();
+  d.reserve0 = pair.reserve0; d.reserve1 = pair.reserve1; d.token0Price = pair.token0Price; d.token1Price = pair.token1Price; d.save();
   return d as PairDayData;
 }
 

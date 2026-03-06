@@ -62,7 +62,7 @@ const HomePage: React.FC = () => {
       const tvl = calcPairTVL(
         parseFloat(d.reserve0 || "0"), parseFloat(d.reserve1 || "0"),
         d.pair?.token0?.id ?? "", d.pair?.token1?.id ?? "",
-        parseFloat(d.pair?.token0Price || "0"), parseFloat(d.pair?.token1Price || "0"),
+        parseFloat(d.token0Price || d.pair?.token0Price || "0"), parseFloat(d.token1Price || d.pair?.token1Price || "0"),
         shmPrice
       );
       byDate[key] = (byDate[key] ?? 0) + tvl;

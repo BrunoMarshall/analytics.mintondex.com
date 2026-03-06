@@ -48,6 +48,8 @@ type PairDayData @entity(immutable: false) {
   pair: Pair!
   reserve0: BigDecimal!
   reserve1: BigDecimal!
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
   volumeToken0: BigDecimal!
   volumeToken1: BigDecimal!
   volumeUSD: BigDecimal!
