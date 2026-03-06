@@ -102,3 +102,12 @@ export const TOKEN_DETAIL_QUERY = gql`
     }
   }
 `;
+
+export const ALL_PAIRS_DAY_DATA_QUERY = gql`
+  query GetAllPairsDayData($startTime: Int!) {
+    pairDayDatas(first: 1000, orderBy: date, orderDirection: asc,
+      where: { date_gt: $startTime }) {
+      date pair { id } reserve0 reserve1 token0Price token1Price
+    }
+  }
+`;

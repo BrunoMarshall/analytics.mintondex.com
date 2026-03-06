@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { POOLS_QUERY, PROTOCOL_DAY_DATA_QUERY } from "../graphql/queries";
+import { POOLS_QUERY, PROTOCOL_DAY_DATA_QUERY, ALL_PAIRS_DAY_DATA_QUERY } from "../graphql/queries";
 import StatCard from "../components/StatCard";
 import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
@@ -15,6 +15,7 @@ const HomePage: React.FC = () => {
   const { shmPrice } = useSHMPrice();
   const { data: poolsData, loading: poolsLoading } = useQuery(POOLS_QUERY, { variables: { first: 100, skip: 0 } });
   const { data: protocolData, loading: protocolLoading } = useQuery(PROTOCOL_DAY_DATA_QUERY, { variables: { startTime } });
+  const { data: allPairsDayData } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
   const pools = poolsData?.pairs ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
   const totalTVL = pools.reduce((sum: number, p: any) => {
