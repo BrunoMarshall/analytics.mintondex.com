@@ -107,8 +107,8 @@ const TokensPage: React.FC = () => {
     const stats = isWshm ? shmStats : (tokenStats[token.id] ?? null);
     return {
       id: token.id, symbol: token.symbol, name: token.name,
-      priceUSD: parseFloat(token.priceUSD || "0") * shmPrice,
-      marketCap: parseFloat(token.priceUSD || "0") * shmPrice * parseFloat(token.totalSupply || "0"),
+      priceUSD: parseFloat(token.priceUSD || "0") > 0 ? (1 / parseFloat(token.priceUSD)) * shmPrice : 0,
+      marketCap: parseFloat(token.priceUSD || "0") > 0 ? (1 / parseFloat(token.priceUSD)) * shmPrice * parseFloat(token.totalSupply || "0") : 0,
       volume: parseFloat(token.tradeVolume || "0") * shmPrice,
       txCount: parseInt(token.txCount || "0"),
       poolCount: parseInt(token.poolCount || "0"),
