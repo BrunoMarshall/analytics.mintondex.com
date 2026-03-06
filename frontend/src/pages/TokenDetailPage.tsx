@@ -60,7 +60,7 @@ const TokenDetailPage: React.FC = () => {
   if (error) return <div className="error-state">Error: {error.message}</div>;
   if (!token) return <div className="error-state">Token not found</div>;
 
-  const priceUSD = isWshm ? shmPrice : parseFloat(token.priceUSD || "0") * shmPrice;
+  const priceUSD = isWshm ? shmPrice : (parseFloat(token.priceUSD || "0") > 0 ? (1 / parseFloat(token.priceUSD)) * shmPrice : 0);
   const volumeUSD = parseFloat(token.tradeVolume || "0") * shmPrice;
 
   // TVL from pairs - use WSHM reserve * 2
@@ -76,7 +76,7 @@ const TokenDetailPage: React.FC = () => {
   // Price chart
   const rawPriceData = isWshm
     ? shmHistory.map((d: any) => ({ ts: parseInt(d.date), price: parseFloat(d.tvlUSD) }))
-    : tokenDayDatas.map((d: any) => ({ ts: d.date, price: parseFloat(d.priceUSD || "0") * shmPrice }));
+    : tokenDayDatas.map((d: any) => ({ ts: d.date, price: parseFloat(d.priceUSD || "0") > 0 ? (1 / parseFloat(d.priceUSD || "0")) * shmPrice : 0 }));
 
   const now = Math.floor(Date.now() / 1000);
   const rangeSecs: Record<Range, number> = { "24H": 86400, "7D": 7 * 86400, "1M": 30 * 86400, "MAX": 99999999 };
