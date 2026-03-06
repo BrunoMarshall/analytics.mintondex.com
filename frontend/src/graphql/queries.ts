@@ -54,11 +54,11 @@ export const RECENT_SWAPS_QUERY = gql`
 
 export const LP_POSITIONS_QUERY = gql`
   query GetLPPositions($poolId: String!) {
-    mints(first: 50, orderBy: timestamp, orderDirection: desc, where: { pair: $poolId }) {
-      id timestamp sender amount0 amount1 amountUSD
+    mints(first: 100, orderBy: timestamp, orderDirection: desc, where: { pair: $poolId }) {
+      id timestamp sender amount0 amount1 amountUSD logIndex
     }
-    burns(first: 50, orderBy: timestamp, orderDirection: desc, where: { pair: $poolId }) {
-      id timestamp sender amount0 amount1 amountUSD
+    burns(first: 100, orderBy: timestamp, orderDirection: desc, where: { pair: $poolId }) {
+      id timestamp sender amount0 amount1 amountUSD logIndex
     }
   }
 `;

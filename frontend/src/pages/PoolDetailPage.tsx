@@ -93,8 +93,14 @@ const PoolDetailPage: React.FC = () => {
                   <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{new Date(parseInt(s.timestamp) * 1000).toLocaleDateString()} {new Date(parseInt(s.timestamp) * 1000).toLocaleTimeString()}</td>
                   <td><span style={{ color: parseFloat(s.amount0In) > 0 ? "var(--accent-green)" : "var(--accent-red)", fontWeight: 700 }}>{parseFloat(s.amount0In) > 0 ? "Buy" : "Sell"}</span></td>
                   <td>{formatUSD(parseFloat(s.amountUSD) * shmPrice, false)}</td>
-                  <td>{formatNumber(parseFloat(s.amount0In) + parseFloat(s.amount0Out), 4)}</td>
-                  <td>{formatNumber(parseFloat(s.amount1In) + parseFloat(s.amount1Out), 4)}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                    {formatNumber(parseFloat(s.amount0In) + parseFloat(s.amount0Out), 4)}
+                    <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{t0?.symbol}</span>
+                  </td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                    {formatNumber(parseFloat(s.amount1In) + parseFloat(s.amount1Out), 4)}
+                    <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{t1?.symbol}</span>
+                  </td>
                   <td style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>{s.to?.slice(0, 8)}...</td>
                 </tr>
               ))}
@@ -106,7 +112,7 @@ const PoolDetailPage: React.FC = () => {
       {activeTab === "positions" && (
         <div className="table-container">
           <table>
-            <thead><tr><th>Type</th><th>Time</th><th>Amount USD</th><th>{t0?.symbol}</th><th>{t1?.symbol}</th></tr></thead>
+            <thead><tr><th>Type</th><th>Time</th><th>Amount USD</th><th>{t0?.symbol}</th><th>{t1?.symbol}</th><th>Wallet</th></tr></thead>
             <tbody>
               {[...(posData?.mints ?? []).map((m: any) => ({...m, type: "Add"})),
                 ...(posData?.burns ?? []).map((b: any) => ({...b, type: "Remove"}))]
@@ -116,8 +122,15 @@ const PoolDetailPage: React.FC = () => {
                   <td><span style={{ color: p.type === "Add" ? "var(--accent-green)" : "var(--accent-red)", fontWeight: 700 }}>{p.type}</span></td>
                   <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{new Date(parseInt(p.timestamp) * 1000).toLocaleDateString()}</td>
                   <td>{formatUSD(parseFloat(p.amountUSD) * shmPrice, false)}</td>
-                  <td>{formatNumber(parseFloat(p.amount0), 4)}</td>
-                  <td>{formatNumber(parseFloat(p.amount1), 4)}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                    {formatNumber(parseFloat(p.amount0), 4)}
+                    <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{t0?.symbol}</span>
+                  </td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                    {formatNumber(parseFloat(p.amount1), 4)}
+                    <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{t1?.symbol}</span>
+                  </td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>{p.sender?.slice(0,8)}...</td>
                 </tr>
               ))}
             </tbody>
