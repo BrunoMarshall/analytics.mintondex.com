@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
 
       <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", background: "linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%)", border: "2px solid var(--border-light)", borderRadius: "var(--radius)", padding: "16px 24px", marginBottom: 28, boxShadow: "var(--shadow)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div className="token-icon" style={{ width: 42, height: 42, fontSize: 13 }}>SH</div>
+          <TokenIcon symbol="SHM" size={42} isSHM={true} />
           <div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>SHM Price</div>
             <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "var(--font-heading)", background: "var(--accent-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
