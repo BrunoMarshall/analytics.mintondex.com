@@ -61,7 +61,7 @@ const TokenDetailPage: React.FC = () => {
   if (!token) return <div className="error-state">Token not found</div>;
 
   const priceUSD = isWshm ? shmPrice : (parseFloat(token.priceUSD || "0") > 0 ? (1 / parseFloat(token.priceUSD)) * shmPrice : 0);
-  const volumeUSD = parseFloat(token.tradeVolume || "0") * shmPrice;
+  const volumeUSD = parseFloat(token.priceUSD || "0") > 0 ? parseFloat(token.tradeVolume || "0") * (1 / parseFloat(token.priceUSD)) * shmPrice : 0;
 
   // TVL from pairs - use WSHM reserve * 2
   const pairs = [...(token.pairsBase ?? []), ...(token.pairsQuote ?? [])];
