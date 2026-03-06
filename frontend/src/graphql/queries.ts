@@ -107,7 +107,10 @@ export const ALL_PAIRS_DAY_DATA_QUERY = gql`
   query GetAllPairsDayData($startTime: Int!) {
     pairDayDatas(first: 1000, orderBy: date, orderDirection: asc,
       where: { date_gt: $startTime }) {
-      date pair { id } reserve0 reserve1 token0Price token1Price
+      date
+      reserve0
+      reserve1
+      pair { token0 { id } token1 { id } token0Price token1Price }
     }
   }
 `;

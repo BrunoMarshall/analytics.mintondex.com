@@ -1,30 +1,41 @@
 import io
 
-# Fix queries.ts
+# Fix queries.ts - use only fields that definitely exist in PairDayData schema
 qt = io.open("C:/mintondex/frontend/src/graphql/queries.ts", encoding="utf-8").read()
-if "ALL_PAIRS_DAY_DATA_QUERY" not in qt:
-    qt += """
+
+# Remove old broken ALL_PAIRS query and replace with clean version
+import re
+qt = re.sub(
+    r'export const ALL_PAIRS_DAY_DATA_QUERY.*?`;',
+    '',
+    qt,
+    flags=re.DOTALL
+)
+qt = qt.rstrip() + """
+
 export const ALL_PAIRS_DAY_DATA_QUERY = gql`
   query GetAllPairsDayData($startTime: Int!) {
     pairDayDatas(first: 1000, orderBy: date, orderDirection: asc,
       where: { date_gt: $startTime }) {
-      date reserve0 reserve1 token1Price
+      date
+      reserve0
+      reserve1
+      pair { token0 { id } token1 { id } token0Price token1Price }
     }
   }
 `;
 """
-else:
-    # Fix existing query to include token1Price
-    qt = qt.replace(
-        "date reserve0 reserve1\n    }",
-        "date reserve0 reserve1 token1Price\n    }"
-    )
-    qt = qt.replace(
-        "date reserve0 reserve1\r\n    }",
-        "date reserve0 reserve1 token1Price\r\n    }"
-    )
 io.open("C:/mintondex/frontend/src/graphql/queries.ts", "w", encoding="utf-8").write(qt)
 print("queries.ts done")
+
+# Also fix POOLS_QUERY to include token0Price token1Price
+qt2 = io.open("C:/mintondex/frontend/src/graphql/queries.ts", encoding="utf-8").read()
+qt2 = qt2.replace(
+    "reserve0 reserve1 token0Price token1Price\n      volumeUSD volumeToken0 volumeToken1 txCount",
+    "reserve0 reserve1 token0Price token1Price\n      volumeUSD volumeToken0 volumeToken1 txCount"
+)
+# Make sure token0 and token1 include 'id' in pools query
+io.open("C:/mintondex/frontend/src/graphql/queries.ts", "w", encoding="utf-8").write(qt2)
 
 content = """import React from "react";
 import { useQuery } from "@apollo/client";
@@ -38,33 +49,40 @@ import { formatSHMPrice } from "../utils/coingecko";
 
 const WSHM = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
 
+// Given a pair, return TVL in USD
+function calcPairTVL(reserve0: number, reserve1: number, token0id: string, token1id: string, token0Price: number, token1Price: number, shmPrice: number): number {
+  const t0isWshm = token0id.toLowerCase() === WSHM;
+  const t1isWshm = token1id.toLowerCase() === WSHM;
+  if (t1isWshm) {
+    // token1 = WSHM, token1Price = WSHM per token0
+    // reserve1 is in WSHM, reserve0 converted via token1Price
+    return (reserve0 * token1Price + reserve1) * shmPrice;
+  } else if (t0isWshm) {
+    // token0 = WSHM, token0Price = token0 per token1
+    return (reserve1 * token0Price + reserve0) * shmPrice;
+  }
+  // Neither is WSHM - just use reserve1 * 2 as rough estimate
+  return reserve1 * 2 * shmPrice;
+}
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const startTime = daysAgo(90);
   const { shmPrice } = useSHMPrice();
   const { data: poolsData, loading: poolsLoading } = useQuery(POOLS_QUERY, { variables: { first: 100, skip: 0 } });
   const { data: protocolData, loading: protocolLoading } = useQuery(PROTOCOL_DAY_DATA_QUERY, { variables: { startTime } });
-  const { data: allPairsDayData, loading: pairDayLoading } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
+  const { data: allPairsDayData, loading: pairDayLoading, error: pairDayError } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
 
   const pools = poolsData?.pairs ?? poolsData?.pools ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
 
-  // TVL: for each pool, reserve1 is WSHM (or reserve0 if WSHM is token0)
-  // Safest: use reserve1 * 2 * shmPrice (since reserve1 is always WSHM in most pairs)
-  // But detect properly: use token1Price (WSHM per token) to get WSHM value of reserve0
   const totalTVL = pools.reduce((sum: number, p: any) => {
-    const wshmIsToken1 = p.token1?.id?.toLowerCase() === WSHM;
-    const r1 = parseFloat(p.reserve1 || "0");
-    const r0 = parseFloat(p.reserve0 || "0");
-    const t1price = parseFloat(p.token1Price || "0"); // WSHM per token0
-    if (wshmIsToken1) {
-      // TVL = (r0 * t1price + r1) * shmPrice  -- both sides in WSHM
-      return sum + (r0 * t1price + r1) * shmPrice;
-    } else {
-      // WSHM is token0: TVL = (r1 * token0Price + r0) * shmPrice
-      const t0price = parseFloat(p.token0Price || "0");
-      return sum + (r1 * t0price + r0) * shmPrice;
-    }
+    return sum + calcPairTVL(
+      parseFloat(p.reserve0 || "0"), parseFloat(p.reserve1 || "0"),
+      p.token0?.id ?? "", p.token1?.id ?? "",
+      parseFloat(p.token0Price || "0"), parseFloat(p.token1Price || "0"),
+      shmPrice
+    );
   }, 0);
 
   const totalVolume = pools.reduce((s: number, p: any) => s + parseFloat(p.volumeUSD || "0") * shmPrice, 0);
@@ -72,16 +90,19 @@ const HomePage: React.FC = () => {
   const tokenSet = new Set<string>();
   pools.forEach((p: any) => { tokenSet.add(p.token0.id); tokenSet.add(p.token1.id); });
 
-  // TVL chart: sum WSHM-equivalent reserves per day * shmPrice
+  // TVL chart from pairDayDatas
   const tvlChartData = React.useMemo(() => {
     const pdd = allPairsDayData?.pairDayDatas ?? [];
     if (pdd.length === 0) return [];
     const byDate: Record<string, number> = {};
     pdd.forEach((d: any) => {
       const key = String(d.date);
-      const r1 = parseFloat(d.reserve1 || "0");
-      // Use reserve1 * 2 as approximation (reserve1 = WSHM side)
-      const tvl = r1 * 2 * shmPrice;
+      const tvl = calcPairTVL(
+        parseFloat(d.reserve0 || "0"), parseFloat(d.reserve1 || "0"),
+        d.pair?.token0?.id ?? "", d.pair?.token1?.id ?? "",
+        parseFloat(d.pair?.token0Price || "0"), parseFloat(d.pair?.token1Price || "0"),
+        shmPrice
+      );
       byDate[key] = (byDate[key] ?? 0) + tvl;
     });
     return Object.entries(byDate)
@@ -152,12 +173,12 @@ const HomePage: React.FC = () => {
                 <tr><td colSpan={5}><div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div></td></tr>
               ) : (
                 pools.slice(0, 5).map((pool: any, i: number) => {
-                  const wshmIsToken1 = pool.token1?.id?.toLowerCase() === WSHM;
-                  const r0 = parseFloat(pool.reserve0 || "0");
-                  const r1 = parseFloat(pool.reserve1 || "0");
-                  const poolTVL = wshmIsToken1
-                    ? (r0 * parseFloat(pool.token1Price || "0") + r1) * shmPrice
-                    : (r1 * parseFloat(pool.token0Price || "0") + r0) * shmPrice;
+                  const poolTVL = calcPairTVL(
+                    parseFloat(pool.reserve0 || "0"), parseFloat(pool.reserve1 || "0"),
+                    pool.token0?.id ?? "", pool.token1?.id ?? "",
+                    parseFloat(pool.token0Price || "0"), parseFloat(pool.token1Price || "0"),
+                    shmPrice
+                  );
                   return (
                     <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)} style={{ cursor: "pointer" }}>
                       <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
