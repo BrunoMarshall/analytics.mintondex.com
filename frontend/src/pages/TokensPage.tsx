@@ -169,7 +169,7 @@ const TokensPage: React.FC = () => {
                   <td><AthAtl price={token.priceUSD} extreme={token.stats?.ath ?? 0} label="ATH" /></td>
                   <td><AthAtl price={token.priceUSD} extreme={token.stats?.atl ?? 0} label="ATL" /></td>
                   <td style={{ fontWeight: 600 }}>{token.marketCap > 0 ? formatUSD(token.marketCap, true) : "—"}</td>
-                  <td>{formatUSD(token.volume, true)}</td>
+                  <td>{token.isSHM ? "—" : formatUSD(token.volume, true)}</td>
                   <td>{token.txCount === -1 ? "—" : formatNumber(token.txCount, 0)}</td>
                   <td>{token.poolCount === -1 ? "—" : formatNumber(token.poolCount, 0)}</td>
                 </tr>
