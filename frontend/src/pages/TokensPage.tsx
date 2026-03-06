@@ -40,7 +40,15 @@ const TokensPage: React.FC = () => {
   const { shmPrice } = useSHMPrice();
   const navigate = useNavigate();
   const [mexcHistory, setMexcHistory] = useState<number[][]>([]);
+  const [shmMarketCap, setShmMarketCap] = useState<number>(0);
   const [tokenStats, setTokenStats] = useState<Record<string, TokenStats>>({});
+
+  useEffect(() => {
+    fetch("/api/shm-marketcap")
+      .then(r => r.json())
+      .then(d => { const mc = d?.shardeum?.usd_market_cap ?? 0; if (mc > 0) setShmMarketCap(mc); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/shm-history")
@@ -112,7 +120,7 @@ const TokensPage: React.FC = () => {
   if (shmMatches) {
     rows.push({
       id: "shm-native", symbol: "SHM", name: "Shardeum",
-      priceUSD: shmPrice, marketCap: 0, volume: 0,
+      priceUSD: shmPrice, marketCap: shmMarketCap, volume: 0,
       txCount: -1, poolCount: -1, isSHM: true, stats: shmStats
     });
   }
