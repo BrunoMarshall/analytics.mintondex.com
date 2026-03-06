@@ -71,14 +71,14 @@ const TokensPage: React.FC = () => {
           const json = await res.json();
           const days = json?.data?.tokenDayDatas ?? [];
           if (days.length === 0) continue;
-          const prices = days.map((d: any) => parseFloat(d.priceUSD) * shmPrice).filter((p: number) => p > 0);
+          const prices = days.map((d: any) => parseFloat(d.priceUSD) > 0 ? (1 / parseFloat(d.priceUSD)) * shmPrice : 0).filter((p: number) => p > 0);
           if (prices.length === 0) continue;
           const ath = Math.max(...prices);
           const atl = Math.min(...prices);
           const weekAgoTs = Math.floor(Date.now() / 1000) - 7 * 86400;
           const weekEntry = days.find((d: any) => d.date >= weekAgoTs) ?? days[0];
           stats[token.id] = {
-            lastWeekPrice: parseFloat(weekEntry.priceUSD) * shmPrice,
+            lastWeekPrice: parseFloat(weekEntry.priceUSD) > 0 ? (1 / parseFloat(weekEntry.priceUSD)) * shmPrice : 0,
             ath, atl
           };
         } catch {}
