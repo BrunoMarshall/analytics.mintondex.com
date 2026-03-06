@@ -142,10 +142,14 @@ const TokenDetailPage: React.FC = () => {
           <div className="table-container">
             <table>
               <thead>
-                <tr><th>Pair</th><th>Reserve 0</th><th>Reserve 1</th><th>Volume</th><th>Txns</th></tr>
+                <tr><th>Pair</th><th>TVL</th><th>Reserve 0</th><th>Reserve 1</th><th>Volume</th><th>Txns</th></tr>
               </thead>
               <tbody>
-                {pairs.map((p: any) => (
+                {pairs.map((p: any) => {
+                  const t0isWshm = (p.token0?.id ?? "").toLowerCase() === WSHM;
+                  const wshmReserve = t0isWshm ? parseFloat(p.reserve0 || "0") : parseFloat(p.reserve1 || "0");
+                  const pairTVL = wshmReserve * 2 * shmPrice;
+                  return (
                   <tr key={p.id} onClick={() => navigate("/pools/" + p.id)} style={{ cursor: "pointer" }}>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -154,12 +158,20 @@ const TokenDetailPage: React.FC = () => {
                         <span style={{ fontWeight: 700 }}>{p.token0?.symbol}/{p.token1?.symbol}</span>
                       </div>
                     </td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{parseFloat(p.reserve0 || "0").toLocaleString("en-US", { maximumFractionDigits: 4 })}</td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{parseFloat(p.reserve1 || "0").toLocaleString("en-US", { maximumFractionDigits: 4 })}</td>
+                    <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(pairTVL, true)}</td>
+                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                      {parseFloat(p.reserve0 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                      <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{p.token0?.symbol}</span>
+                    </td>
+                    <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                      {parseFloat(p.reserve1 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                      <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{p.token1?.symbol}</span>
+                    </td>
                     <td>{formatUSD(parseFloat(p.volumeUSD || "0") * shmPrice, true)}</td>
                     <td>{formatNumber(parseInt(p.txCount || "0"), 0)}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

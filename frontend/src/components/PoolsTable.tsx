@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatUSD, formatNumber } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
-import { tokenPriceToUSD } from "../utils/coingecko";
 import TokenIcon from "../components/TokenIcon";
+
+const WSHM = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
 
 interface Pair {
   id: string;
@@ -18,6 +19,16 @@ interface Pair {
   createdAtTimestamp: string;
 }
 
+function calcTVL(p: Pair, shmPrice: number): number {
+  const t0isWshm = p.token0.id.toLowerCase() === WSHM;
+  const t1isWshm = p.token1.id.toLowerCase() === WSHM;
+  const r0 = parseFloat(p.reserve0 || "0");
+  const r1 = parseFloat(p.reserve1 || "0");
+  if (t0isWshm) return r0 * 2 * shmPrice;
+  if (t1isWshm) return r1 * 2 * shmPrice;
+  return r1 * 2 * shmPrice;
+}
+
 const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loading = false }) => {
   const navigate = useNavigate();
   const { shmPrice } = useSHMPrice();
@@ -28,7 +39,7 @@ const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loa
     return p.token0.symbol.toLowerCase().includes(q) ||
            p.token1.symbol.toLowerCase().includes(q) ||
            p.id.toLowerCase().includes(q);
-  });
+  }).sort((a, b) => calcTVL(b, shmPrice) - calcTVL(a, shmPrice));
 
   if (loading) return <div className="loading-state"><div className="spinner" /><span>Loading pools...</span></div>;
 
@@ -53,9 +64,9 @@ const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loa
           </thead>
           <tbody>
             {filtered.map((pool, i) => {
-              const tvl = parseFloat(pool.reserve1 || "0") * 2 * shmPrice;
+              const tvl = calcTVL(pool, shmPrice);
               return (
-                <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id.toLowerCase())}>
+                <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)} style={{ cursor: "pointer" }}>
                   <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
                   <td>
                     <div className="token-pair">
@@ -71,8 +82,14 @@ const PoolsTable: React.FC<{ pools: Pair[]; loading?: boolean }> = ({ pools, loa
                   </td>
                   <td style={{ color: "var(--accent-green)", fontWeight: 700 }}>{formatUSD(tvl, true)}</td>
                   <td>{formatUSD(parseFloat(pool.volumeUSD || "0") * shmPrice, true)}</td>
-                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{formatNumber(parseFloat(pool.reserve0 || "0"), 2)} {pool.token0.symbol}</td>
-                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{formatNumber(parseFloat(pool.reserve1 || "0"), 2)} {pool.token1.symbol}</td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                    {parseFloat(pool.reserve0 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                    <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{pool.token0.symbol}</span>
+                  </td>
+                  <td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                    {parseFloat(pool.reserve1 || "0").toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                    <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>{pool.token1.symbol}</span>
+                  </td>
                   <td>{formatNumber(parseInt(pool.txCount || "0"), 0)}</td>
                 </tr>
               );
