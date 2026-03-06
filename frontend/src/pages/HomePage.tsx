@@ -8,31 +8,52 @@ import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
 import { formatSHMPrice } from "../utils/coingecko";
 
+const WSHM = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const startTime = daysAgo(90);
   const { shmPrice } = useSHMPrice();
   const { data: poolsData, loading: poolsLoading } = useQuery(POOLS_QUERY, { variables: { first: 100, skip: 0 } });
   const { data: protocolData, loading: protocolLoading } = useQuery(PROTOCOL_DAY_DATA_QUERY, { variables: { startTime } });
-  const { data: allPairsDayData } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
+  const { data: allPairsDayData, loading: pairDayLoading } = useQuery(ALL_PAIRS_DAY_DATA_QUERY, { variables: { startTime } });
 
   const pools = poolsData?.pairs ?? poolsData?.pools ?? [];
   const dayData = protocolData?.mintondexDayDatas ?? [];
 
+  // TVL: for each pool, reserve1 is WSHM (or reserve0 if WSHM is token0)
+  // Safest: use reserve1 * 2 * shmPrice (since reserve1 is always WSHM in most pairs)
+  // But detect properly: use token1Price (WSHM per token) to get WSHM value of reserve0
   const totalTVL = pools.reduce((sum: number, p: any) => {
-    return sum + (parseFloat(p.reserve0 || "0") + parseFloat(p.reserve1 || "0")) * shmPrice;
+    const wshmIsToken1 = p.token1?.id?.toLowerCase() === WSHM;
+    const r1 = parseFloat(p.reserve1 || "0");
+    const r0 = parseFloat(p.reserve0 || "0");
+    const t1price = parseFloat(p.token1Price || "0"); // WSHM per token0
+    if (wshmIsToken1) {
+      // TVL = (r0 * t1price + r1) * shmPrice  -- both sides in WSHM
+      return sum + (r0 * t1price + r1) * shmPrice;
+    } else {
+      // WSHM is token0: TVL = (r1 * token0Price + r0) * shmPrice
+      const t0price = parseFloat(p.token0Price || "0");
+      return sum + (r1 * t0price + r0) * shmPrice;
+    }
   }, 0);
+
   const totalVolume = pools.reduce((s: number, p: any) => s + parseFloat(p.volumeUSD || "0") * shmPrice, 0);
   const totalTxns = pools.reduce((s: number, p: any) => s + parseInt(p.txCount || "0"), 0);
   const tokenSet = new Set<string>();
   pools.forEach((p: any) => { tokenSet.add(p.token0.id); tokenSet.add(p.token1.id); });
 
-  // Build TVL chart by summing reserves across all pairs per day
+  // TVL chart: sum WSHM-equivalent reserves per day * shmPrice
   const tvlChartData = React.useMemo(() => {
+    const pdd = allPairsDayData?.pairDayDatas ?? [];
+    if (pdd.length === 0) return [];
     const byDate: Record<string, number> = {};
-    (allPairsDayData?.pairDayDatas ?? []).forEach((d: any) => {
+    pdd.forEach((d: any) => {
       const key = String(d.date);
-      const tvl = (parseFloat(d.reserve0 || "0") + parseFloat(d.reserve1 || "0")) * shmPrice;
+      const r1 = parseFloat(d.reserve1 || "0");
+      // Use reserve1 * 2 as approximation (reserve1 = WSHM side)
+      const tvl = r1 * 2 * shmPrice;
       byDate[key] = (byDate[key] ?? 0) + tvl;
     });
     return Object.entries(byDate)
@@ -86,7 +107,7 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className="charts-grid" style={{ marginBottom: 32 }}>
-        <TVLChart data={tvlChartData} loading={poolsLoading || !allPairsDayData} />
+        <TVLChart data={tvlChartData} loading={pairDayLoading} />
         <VolumeChart data={volumeChartData} loading={protocolLoading} />
       </div>
 
@@ -103,7 +124,12 @@ const HomePage: React.FC = () => {
                 <tr><td colSpan={5}><div className="loading-state" style={{ padding: 40 }}><div className="spinner" /></div></td></tr>
               ) : (
                 pools.slice(0, 5).map((pool: any, i: number) => {
-                  const poolTVL = (parseFloat(pool.reserve0 || "0") + parseFloat(pool.reserve1 || "0")) * shmPrice;
+                  const wshmIsToken1 = pool.token1?.id?.toLowerCase() === WSHM;
+                  const r0 = parseFloat(pool.reserve0 || "0");
+                  const r1 = parseFloat(pool.reserve1 || "0");
+                  const poolTVL = wshmIsToken1
+                    ? (r0 * parseFloat(pool.token1Price || "0") + r1) * shmPrice
+                    : (r1 * parseFloat(pool.token0Price || "0") + r0) * shmPrice;
                   return (
                     <tr key={pool.id} onClick={() => navigate("/pools/" + pool.id)} style={{ cursor: "pointer" }}>
                       <td style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", width: 40 }}>{i + 1}</td>
