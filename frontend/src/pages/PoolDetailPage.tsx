@@ -130,14 +130,19 @@ const PoolDetailPage: React.FC = () => {
           <div className="card">
             <div className="card-title">Token Composition</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
-              {[{token: t0, reserve: pool.reserve0}, {token: t1, reserve: pool.reserve1}].map(({token, reserve}) => (
+              {(() => {
+                const WSHM_ADDR2 = "0x73653a3fb19e2b8ac5f88f1603eeb7ba164cfbeb";
+                const wshmR = (t0?.id ?? "").toLowerCase() === WSHM_ADDR2 ? parseFloat(pool.reserve0||"0") : parseFloat(pool.reserve1||"0");
+                return [{token: t0, reserve: pool.reserve0, usd: (t0?.id ?? "").toLowerCase() === WSHM_ADDR2 ? parseFloat(pool.reserve0||"0") * shmPrice : wshmR * shmPrice}, 
+                        {token: t1, reserve: pool.reserve1, usd: (t1?.id ?? "").toLowerCase() === WSHM_ADDR2 ? parseFloat(pool.reserve1||"0") * shmPrice : wshmR * shmPrice}];
+              })().map(({token, reserve, usd}) => (
                 <div key={token?.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <TokenIcon address={token?.id} symbol={token?.symbol} size={28} />
                   <div>
                     <div style={{ fontWeight: 700, fontFamily: "var(--font-heading)" }}>{token?.symbol}</div>
                     <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>{parseFloat(reserve || "0").toLocaleString("en-US", {maximumFractionDigits: 4})}</div>
                   </div>
-                  <div style={{ marginLeft: "auto", fontWeight: 700, color: "var(--accent)" }}>{formatUSD(parseFloat(reserve || "0") * (reserve === pool.reserve0 ? mintPriceUSD : wshmPriceUSD), false)}</div>
+                  <div style={{ marginLeft: "auto", fontWeight: 700, color: "var(--accent)" }}>{formatUSD(usd, false)}</div>
                 </div>
               ))}
             </div>

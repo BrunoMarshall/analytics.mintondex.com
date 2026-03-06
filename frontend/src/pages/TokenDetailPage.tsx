@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { TOKEN_DETAIL_QUERY, TOKEN_DAY_DATA_QUERY } from "../graphql/queries";
+import { TOKEN_DETAIL_QUERY, TOKEN_DAY_DATA_QUERY, ALL_PAIR_DAY_DATA_FOR_TOKEN_QUERY } from "../graphql/queries";
 import { TVLChart, VolumeChart } from "../components/Charts";
 import { formatUSD, formatNumber, daysAgo } from "../utils/format";
 import { useSHMPrice } from "../hooks/useSHMPrice";
@@ -57,6 +57,27 @@ const TokenDetailPage: React.FC = () => {
     date: new Date(d.ts * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     value: d.price
   }));
+
+  // TVL chart: use pairDayDatas from each pair, find WSHM reserve and double it
+  const { data: pairDayDataAll } = useQuery(ALL_PAIR_DAY_DATA_FOR_TOKEN_QUERY, {
+    variables: { pairIds: pairs.map((p: any) => p.id), startTime: daysAgo(90) },
+    skip: pairs.length === 0
+  });
+
+  const tvlChartData = React.useMemo(() => {
+    const pdd = pairDayDataAll?.pairDayDatas ?? [];
+    if (pdd.length === 0) return [];
+    const byDate: Record<string, number> = {};
+    pdd.forEach((d: any) => {
+      const key = String(d.date);
+      const t0isWshm = (d.pair?.token0?.id ?? "").toLowerCase() === WSHM;
+      const wshmR = t0isWshm ? parseFloat(d.reserve0 || "0") : parseFloat(d.reserve1 || "0");
+      byDate[key] = (byDate[key] ?? 0) + wshmR * 2 * shmPrice;
+    });
+    return Object.entries(byDate)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([date, tvl]) => ({ date, tvlUSD: String(tvl) }));
+  }, [pairDayDataAll, shmPrice]);
 
   const volumeChartData = tokenDayDatas.map((d: any) => ({
     date: String(d.date),
@@ -133,6 +154,7 @@ const TokenDetailPage: React.FC = () => {
       {/* TVL + Volume side by side */}
       <div className="charts-grid" style={{ marginBottom: 24 }}>
         <TVLChart data={tokenDayDatas.map((d: any) => ({ date: String(d.date), tvlUSD: (parseFloat(d.priceUSD || "0") * shmPrice * parseFloat(d.txCount || "1")).toString() }))} loading={false} />
+        <TVLChart data={tvlChartData} loading={!pairDayDataAll && pairs.length > 0} />
         <VolumeChart data={volumeChartData} loading={false} />
       </div>
 

@@ -114,3 +114,13 @@ export const ALL_PAIRS_DAY_DATA_QUERY = gql`
     }
   }
 `;
+
+export const ALL_PAIR_DAY_DATA_FOR_TOKEN_QUERY = gql`
+  query GetPairDayDataForToken($pairIds: [String!]!, $startTime: Int!) {
+    pairDayDatas(first: 1000, orderBy: date, orderDirection: asc,
+      where: { pair_in: $pairIds, date_gt: $startTime }) {
+      date reserve0 reserve1
+      pair { id token0 { id } token1 { id } }
+    }
+  }
+`;
