@@ -42,7 +42,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>Live via CoinGecko - refreshes every 60s</div>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>Live via MEXC - refreshes every 60s</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[
             { label: "WSHM", addr: "0x7365...fbeb" }, { label: "MRSH", addr: "0xe223...31f1" },
