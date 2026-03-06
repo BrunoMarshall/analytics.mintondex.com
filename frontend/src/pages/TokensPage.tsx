@@ -26,11 +26,11 @@ function AthAtl({ price, extreme, label }: { price: number; extreme: number; lab
   if (!extreme || !price) return <span style={{ color: "var(--text-muted)" }}>—</span>;
   const pct = ((price - extreme) / extreme) * 100;
   const isAtExtreme = Math.abs(pct) < 0.05;
-  const color = label === "ATH" ? (isAtExtreme ? "#22c55e" : "#ef4444") : "#22c55e";
+  const color = label === "ATH" ? (isAtExtreme ? "#22c55e" : "#ef4444") : (isAtExtreme ? "#ef4444" : "#22c55e");
   return (
     <div style={{ lineHeight: 1.4 }}>
       <div style={{ fontWeight: 600, fontSize: 12 }}>{formatUSD(extreme, false)}</div>
-      <div style={{ color, fontSize: 11 }}>{label === "ATH" && isAtExtreme ? <span style={{ animation: "blink 1.2s ease-in-out infinite", color: "#22c55e", fontWeight: 800 }}>now</span> : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`}</div>
+      <div style={{ color, fontSize: 11 }}>{isAtExtreme ? <span style={{ animation: "blink 1.2s ease-in-out infinite", color: label === "ATH" ? "#22c55e" : "#ef4444", fontWeight: 800 }}>now</span> : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`}</div>
     </div>
   );
 }
