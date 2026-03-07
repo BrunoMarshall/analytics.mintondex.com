@@ -1,0 +1,13 @@
+import io
+
+f = io.open('C:/mintondex/frontend/src/pages/HomePage.tsx', encoding='utf-8').read()
+
+old = 'tvlChartData = React.useMemo(() => {\n    const pdd = allPairsDayData?.pairDayDatas ?? [];\n    if (pdd.length === 0) return [];\n    const byDate: Record<string, number> = {};\n    pdd.forEach((d: any) => {\n      const key = String(d.date);\n      const tvl = calcPairTVL(\n        parseFloat(d.reserve0 || "0"), parseFloat(d.reserve1 || "0"),\n        d.pair?.token0?.id ?? "", d.pair?.token1?.id ?? "",\n        parseFloat(d.token0Price || d.pair?.token0Price || "0"), parseFloat(d.token1Price || d.pair?.token1Price || "0"),\n        shmPrice\n      );\n      byDate[key] = (byDate[key] ?? 0) + tvl;\n    });\n    return Object.entries(byDate)\n      .sort(([a], [b]) => Number(a) - Number(b))\n      .map(([date, tvl]) => ({ date, tvlUSD: String(tvl) }));\n  }, [allPairsDayData, shmPrice]);'
+
+new = 'tvlChartData = React.useMemo(() => {\n    const pdd = allPairsDayData?.pairDayDatas ?? [];\n    if (pdd.length === 0) return [];\n\n    // Group entries by pair id, sorted ascending by date\n    const byPair: Record<string, any[]> = {};\n    pdd.forEach((d: any) => {\n      const pid = d.pair?.token0?.id + "_" + d.pair?.token1?.id;\n      if (!byPair[pid]) byPair[pid] = [];\n      byPair[pid].push(d);\n    });\n    Object.values(byPair).forEach(arr => arr.sort((a, b) => Number(a.date) - Number(b.date)));\n\n    // All unique dates sorted ascending\n    const allDates = Array.from(new Set(pdd.map((d: any) => String(d.date)))).sort((a, b) => Number(a) - Number(b));\n\n    // For each date, carry forward last known reserve for every pair\n    return allDates.map(dateKey => {\n      let total = 0;\n      Object.values(byPair).forEach(entries => {\n        const last = entries.filter((e: any) => Number(e.date) <= Number(dateKey)).pop();\n        if (!last) return;\n        total += calcPairTVL(\n          parseFloat(last.reserve0 || "0"), parseFloat(last.reserve1 || "0"),\n          last.pair?.token0?.id ?? "", last.pair?.token1?.id ?? "",\n          parseFloat(last.token0Price || last.pair?.token0Price || "0"), parseFloat(last.token1Price || last.pair?.token1Price || "0"),\n          shmPrice\n        );\n      });\n      return { date: dateKey, tvlUSD: String(total) };\n    });\n  }, [allPairsDayData, shmPrice]);'
+
+assert old in f, "ABORT: pattern not found in HomePage.tsx"
+f = f.replace(old, new)
+io.open('C:/mintondex/frontend/src/pages/HomePage.tsx', 'w', encoding='utf-8').write(f)
+print("OK HomePage.tsx - TVL chart now cumulative (carry-forward per pool)")
+print("Next: cd C:/mintondex/frontend && npm run build")

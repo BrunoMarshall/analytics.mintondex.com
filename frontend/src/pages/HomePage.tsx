@@ -56,20 +56,34 @@ const HomePage: React.FC = () => {
   const tvlChartData = React.useMemo(() => {
     const pdd = allPairsDayData?.pairDayDatas ?? [];
     if (pdd.length === 0) return [];
-    const byDate: Record<string, number> = {};
+
+    // Group entries by pair id, sorted ascending by date
+    const byPair: Record<string, any[]> = {};
     pdd.forEach((d: any) => {
-      const key = String(d.date);
-      const tvl = calcPairTVL(
-        parseFloat(d.reserve0 || "0"), parseFloat(d.reserve1 || "0"),
-        d.pair?.token0?.id ?? "", d.pair?.token1?.id ?? "",
-        parseFloat(d.token0Price || d.pair?.token0Price || "0"), parseFloat(d.token1Price || d.pair?.token1Price || "0"),
-        shmPrice
-      );
-      byDate[key] = (byDate[key] ?? 0) + tvl;
+      const pid = d.pair?.token0?.id + "_" + d.pair?.token1?.id;
+      if (!byPair[pid]) byPair[pid] = [];
+      byPair[pid].push(d);
     });
-    return Object.entries(byDate)
-      .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([date, tvl]) => ({ date, tvlUSD: String(tvl) }));
+    Object.values(byPair).forEach(arr => arr.sort((a, b) => Number(a.date) - Number(b.date)));
+
+    // All unique dates sorted ascending
+    const allDates = Array.from(new Set(pdd.map((d: any) => String(d.date)))).sort((a, b) => Number(a) - Number(b));
+
+    // For each date, carry forward last known reserve for every pair
+    return allDates.map(dateKey => {
+      let total = 0;
+      Object.values(byPair).forEach(entries => {
+        const last = entries.filter((e: any) => Number(e.date) <= Number(dateKey)).pop();
+        if (!last) return;
+        total += calcPairTVL(
+          parseFloat(last.reserve0 || "0"), parseFloat(last.reserve1 || "0"),
+          last.pair?.token0?.id ?? "", last.pair?.token1?.id ?? "",
+          parseFloat(last.token0Price || last.pair?.token0Price || "0"), parseFloat(last.token1Price || last.pair?.token1Price || "0"),
+          shmPrice
+        );
+      });
+      return { date: dateKey, tvlUSD: String(total) };
+    });
   }, [allPairsDayData, shmPrice]);
 
   const volumeChartData = dayData.map((d: any) => ({
